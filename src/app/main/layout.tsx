@@ -56,6 +56,7 @@ import {
   PhoneLaptopRegular,
   DocumentSignatureRegular,
   PersonBoardRegular,
+  Shield20Filled,
 } from '@fluentui/react-icons';
 
 // Constants (unchanged)
@@ -190,6 +191,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     '/main/assets': '5', 
     '/main/users': '6', 
     '/main/logs': '9', 
+    '/main/security-incident': '10'
   };
 
   // Determine the currently selected value based on the pathname
@@ -235,6 +237,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/main/announcements">
                 <NavItem  icon={<Announcements />} value="2">
                   Announcements
+                </NavItem>
+                </Link>
+
+
+                <Link href="/main/security-incident">
+                <NavItem  icon={<Shield20Filled />} value="10">
+                  Security Incident
                 </NavItem>
                 </Link>
 
