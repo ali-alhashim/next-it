@@ -3,7 +3,7 @@
 import * as React from 'react';
 import './globals.css'; // Make sure your global styles are still imported
 import { usePathname } from 'next/navigation'; // Import usePathname
-
+import Link from 'next/link';
 import {
   AppItem,
   Hamburger,
@@ -182,19 +182,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // Define a mapping from pathnames to NavItem values
   // Make sure these paths exactly match your `href` values or are prefixes
   const pathValueMap: { [key: string]: string } = {
-    '/': '1', // For the root dashboard
+    '/': '1', // For the root dashboard (if you ever navigate directly to '/')
     '/main': '1', // For /main dashboard
-    '/dashboard': '1', // For /dashboard
     '/main/announcements': '2',
-    '/main/users': '10',
-    // Add other mappings as needed
-    // Example for exact matches:
-    // '/main/tickets': '4',
-    // '/main/devices': '5',
-    // '/main/assets': '9',
-    // '/main/training': '15',
-    // '/main/analytics': '19',
-    // '/main/reports': '20',
+    '/main/tickets': '3', 
+    '/main/devices': '4', 
+    '/main/assets': '5', 
+    '/main/users': '6', 
+    '/main/logs': '9', 
   };
 
   // Determine the currently selected value based on the pathname
@@ -230,46 +225,54 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <AppItem icon={<PersonCircle32Regular />} as="a" href="#">
                   Next IT
                 </AppItem>
+                 
+                 <Link href="/main">
+                  <NavItem  icon={<Dashboard />} value="1">
+                    Dashboard
+                  </NavItem>
+                </Link>
 
-                <NavItem href="/main" icon={<Dashboard />} value="1">
-                  Dashboard
-                </NavItem>
-
-                <NavItem href="/main/announcements" icon={<Announcements />} value="2">
+                <Link href="/main/announcements">
+                <NavItem  icon={<Announcements />} value="2">
                   Announcements
                 </NavItem>
+                </Link>
 
-                {/* NOTE: For items with href="#" you might need custom click handlers
-                   or different logic if they are meant to navigate.
-                   For now, they won't automatically select based on URL. */}
-                <NavItem href="#" icon={<TicketDiagonalRegular />} value="4">
+                <Link href="/main/tickets">
+                <NavItem  icon={<TicketDiagonalRegular />} value="3">
                   Tickets
                 </NavItem>
+                </Link>
 
-                <NavItem href="/main/devices" icon={<PhoneLaptopRegular />} value="5">
+                <Link href="/main/devices">
+                <NavItem  icon={<PhoneLaptopRegular />} value="4">
                   Devices
                 </NavItem>
+                </Link>
 
-                <NavItem href="#" icon={<DocumentSignatureRegular />} value="9">
+
+                 <Link href="/main/assets">
+                <NavItem  icon={<DocumentSignatureRegular />} value="5">
                   Assets
                 </NavItem>
+                </Link>
 
-                 <NavItem href="/main/users" icon={<PersonBoardRegular />} value="10">
-                  Users
-                </NavItem>
+                <Link href="/main/users">
+                  <NavItem  icon={<PersonBoardRegular />} value="6">
+                    Users
+                  </NavItem>
+                </Link>
 
-                <NavSectionHeader>Learning</NavSectionHeader>
-                <NavItem href="#" icon={<Training />} value="15">
-                  Training
-                </NavItem>
+                
 
                 <NavDivider />
-                <NavItem href="#" icon={<Analytics />} value="19">
-                  Analytics
+               
+               <Link href="/main/logs">
+                <NavItem href="#" icon={<Reports />} value="9">
+                  Logs
                 </NavItem>
-                <NavItem href="#" icon={<Reports />} value="20">
-                  Reports
-                </NavItem>
+                </Link>
+
               </NavDrawerBody>
             </NavDrawer>
 
