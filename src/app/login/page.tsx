@@ -5,7 +5,7 @@ import { TextField } from '@fluentui/react/lib/TextField';
 import { PrimaryButton } from '@fluentui/react/lib/Button';
 import { Stack } from '@fluentui/react/lib/Stack';
 import { useRouter } from 'next/navigation';
-
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
   const [badgeNumber, setBadgeNumber] = useState('');
@@ -17,17 +17,20 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     setError('');
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ badgeNumber, password }),
+
+    const res = await signIn('credentials', {
+      redirect: false,
+     
+      badgeNumber: badgeNumber, 
+      password,
     });
 
-    if (res.ok) {
-      router.push('/');
-    } else {
-      const err = await res.json();
-      setError(err.message || 'Login failed');
+     console.log('signIn response:', res);
+
+    if (res?.error) {
+      setError(res.error);
+    } else if (res?.ok) {
+      router.push('/main');
     }
   };
 
