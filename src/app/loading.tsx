@@ -3,6 +3,10 @@
 
 import { Spinner, makeStyles, tokens } from '@fluentui/react-components';
 import React from 'react';
+import { initializeIcons } from '@fluentui/react/lib/Icons';
+
+// Register icons
+initializeIcons();
 
 const useStyles = makeStyles({
   loadingContainer: {

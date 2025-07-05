@@ -277,7 +277,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <NavDivider />
                
                <Link href="/main/logs">
-                <NavItem href="#" icon={<Reports />} value="9">
+                <NavItem  icon={<Reports />} value="9">
                   Logs
                 </NavItem>
                 </Link>
