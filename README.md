@@ -28,8 +28,8 @@ Ensure you have the following installed:
 
 1.  **Clone the repository:**
     ```bash
-    git clone [YOUR_REPOSITORY_URL_HERE]
-    cd nextit-app # Or whatever your project folder is called
+    git clone https://github.com/ali-alhashim/next-it
+    cd next-it 
     ```
 2.  **Install dependencies:**
     ```bash
@@ -122,7 +122,7 @@ We welcome contributions! Please follow these steps to contribute:
 
 
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the MIT License - see the https://opensource.org/license/mit file for details.
 
 ---
 

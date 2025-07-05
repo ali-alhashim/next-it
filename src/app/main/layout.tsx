@@ -246,7 +246,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   Tickets
                 </NavItem>
 
-                <NavItem href="#" icon={<PhoneLaptopRegular />} value="5">
+                <NavItem href="/main/devices" icon={<PhoneLaptopRegular />} value="5">
                   Devices
                 </NavItem>
 
