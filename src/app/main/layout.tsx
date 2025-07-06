@@ -296,7 +296,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Tooltip>
 
                 {/* Your actual page content */}
-                <div style={{ width: '100%' }}>{children}</div>
+                <div id="WorkSpace" style={{ flex: 1, minHeight: '100vh', overflowY: 'auto' }}>{children}</div>
               </div>
             </ContentMotion>
           </div>
