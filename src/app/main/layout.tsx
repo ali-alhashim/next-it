@@ -58,6 +58,7 @@ import {
   PersonBoardRegular,
   Shield20Filled,
 } from '@fluentui/react-icons';
+import { fitContentToBounds } from '@fluentui/react';
 
 // Constants (unchanged)
 const drawerWidth = '260px';
@@ -286,7 +287,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </NavDrawer>
 
             <ContentMotion visible={isOpen}>
-              <div className={styles.content}>
+              <div className={styles.content} style={{ width: '100%', overflowX: 'auto', border: '1px dashed red' }}>
                 <Tooltip content="Toggle navigation pane" relationship="label">
                   <Hamburger
                     onClick={() => setIsOpen(!isOpen)}
@@ -296,9 +297,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Tooltip>
 
                 {/* Your actual page content */}
-                <div id="WorkSpace" style={{ flex: 1, minHeight: '100vh', overflowY: 'auto' }}>{children}</div>
+                <div id="WorkSpace">{children}</div>
               </div>
             </ContentMotion>
+
+
+
+            
           </div>
         </FluentProvider>
       </body>
