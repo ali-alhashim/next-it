@@ -35,7 +35,7 @@ export const authOptions: AuthOptions = {
         return {
           id: user._id.toString(),
           name: user.name || "User",
-          badgeNumber: user.badgeNumber,
+          email: user.badgeNumber,
         };
       },
     }),
@@ -54,7 +54,7 @@ export const authOptions: AuthOptions = {
       // Add token info to session user
       if (token) {
         session.user = {
-          email: token.badgeNumber as string,
+          email: token.badgeNumber as string, // we map email as badgeNumber in session
           name: token.name as string,
         };
       }

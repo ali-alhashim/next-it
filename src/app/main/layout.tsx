@@ -58,7 +58,7 @@ import {
   PersonBoardRegular,
   Shield20Filled,
 } from '@fluentui/react-icons';
-import { fitContentToBounds } from '@fluentui/react';
+
 
 // Constants (unchanged)
 const drawerWidth = '260px';
@@ -175,7 +175,7 @@ const Reports = bundleIcon(DocumentBulletListMultiple20Filled, DocumentBulletLis
 const Person = bundleIcon(Person20Filled, Person20Regular);
 
 // Main Layout Component
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function  RootLayout ({ children }: { children: React.ReactNode }) {
   const styles = useStyles();
   const [isOpen, setIsOpen] = React.useState(true);
   const restoreFocusTargetAttributes = useRestoreFocusTarget();
@@ -207,6 +207,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     }
   }
 
+
+  
 
   return (
     <html lang="en">
@@ -297,7 +299,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Tooltip>
 
                 {/* Your actual page content */}
-                <div id="WorkSpace">{children}</div>
+                <div id="WorkSpace">
+                 
+                  
+                  {children}
+                 
+                </div>
               </div>
             </ContentMotion>
 

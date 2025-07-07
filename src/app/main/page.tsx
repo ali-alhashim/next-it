@@ -4,6 +4,7 @@ import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
 import { Separator } from '@fluentui/react/lib/Separator';
 import { DetailsList, IColumn } from '@fluentui/react/lib/DetailsList';
+import { useEffect, useState } from 'react';
 
 const Card = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div
@@ -23,18 +24,25 @@ const Card = ({ title, children }: { title: string; children: React.ReactNode })
 );
 
 export default function DashboardPage() {
+  const [user, setUser] = useState<{ name: string; email: string; badgeNumber: string } | null>(null);
 
-
-  const user = {
-    name: 'Ali Alhashim',
-    email: 'Ali-Alhashim@outlook.com',
-    badgeNumber: '954',
-  };
+  useEffect(() => {
+    async function fetchUser() {
+      const res = await fetch('/api/users/me',  { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+      } else {
+        setUser(null);
+      }
+    }
+    fetchUser();
+  }, []);
 
   const assets = [
     { type: 'Laptop', model: 'Dell Latitude', receivedDate:'May-03-2025' , handoverDate:'' },
-    { type: 'Monitor', model: 'HP 24"' ,      receivedDate:'July-06-2025', handoverDate:''},
-    { type: 'Phone', model: 'iPhone 12' ,     receivedDate:'June-24-2024', handoverDate:'July-06-2025'},
+    { type: 'Monitor', model: 'HP 24"' , receivedDate:'July-06-2025', handoverDate:''},
+    { type: 'Phone', model: 'iPhone 12' , receivedDate:'June-24-2024', handoverDate:'July-06-2025'},
   ];
 
   const tickets = [
@@ -61,32 +69,29 @@ export default function DashboardPage() {
   ];
 
   const userItems = [
-    { field: 'Name', value: user.name },
-    { field: 'Email', value: user.email },
-    { field: 'Badge Number', value: user.badgeNumber },
+    { field: 'Name', value: user?.name ?? 'Loading...' },
+    { field: 'Email', value: user?.email ?? 'Loading...' },
+    { field: 'Badge Number', value: user?.badgeNumber ?? 'Loading...' },
   ];
 
   return (
     <Stack
       tokens={{ childrenGap: 20 }}
-      styles={{ root: { padding: 32,  minHeight: '100vh' } }}
+      styles={{ root: { padding: 32, minHeight: '100vh' } }}
     >
       <Text variant="xxLarge" styles={{ root: { marginBottom: 16 } }}>
         Welcome to Next-IT Dashboard
       </Text>
 
-      <Stack  tokens={{ childrenGap: 20 }} wrap>
-        {/* Card 1: User Info */}
+      <Stack tokens={{ childrenGap: 20 }} wrap>
         <Card title="User Information">
           <DetailsList items={userItems} columns={userColumns} />
         </Card>
 
-        {/* Card 2: My IT Assets */}
         <Card title="My IT Assets">
           <DetailsList items={assets} columns={assetColumns} />
         </Card>
 
-        {/* Card 3: My Tickets */}
         <Card title="My Tickets">
           <DetailsList items={tickets} columns={ticketColumns} />
         </Card>
