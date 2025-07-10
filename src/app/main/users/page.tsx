@@ -15,7 +15,7 @@ interface User {
   email: string;
   badgeNumber: string;
   role: string;
-  image: string;
+  photo: string;
 }
 
 export default function UsersPage() {
@@ -73,7 +73,7 @@ export default function UsersPage() {
       minWidth: 50,
       maxWidth: 60,
       onRender: (item: User) => (
-        <Image src={item.image} width={40} height={40} imageFit={ImageFit.cover} styles={{ root: { borderRadius: '50%' } }} />
+        <Image src={`/api/${item.photo}`} width={40} height={40} imageFit={ImageFit.cover} styles={{ root: { borderRadius: '50%' } }} />
       ),
     },
     {
