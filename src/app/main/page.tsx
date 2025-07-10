@@ -24,7 +24,7 @@ const Card = ({ title, children }: { title: string; children: React.ReactNode })
 );
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<{ name: string; email: string; badgeNumber: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; badgeNumber: string, photo:string, role:string } | null>(null);
 
   useEffect(() => {
     async function fetchUser() {
@@ -50,10 +50,7 @@ export default function DashboardPage() {
     { id: '1235', subject: 'Request new email', status:'CLOSED' },
   ];
 
-  const userColumns: IColumn[] = [
-    { key: '1', name: 'Field', fieldName: 'field', minWidth: 100, isResizable: true },
-    { key: '2', name: 'Value', fieldName: 'value', minWidth: 200, isResizable: true },
-  ];
+
 
   const assetColumns: IColumn[] = [
     { key: '1', name: 'Type', fieldName: 'type', minWidth: 100 },
@@ -68,11 +65,7 @@ export default function DashboardPage() {
     { key: '3', name: 'Status', fieldName: 'status', minWidth: 200 },
   ];
 
-  const userItems = [
-    { field: 'Name', value: user?.name ?? 'Loading...' },
-    { field: 'Email', value: user?.email ?? 'Loading...' },
-    { field: 'Badge Number', value: user?.badgeNumber ?? 'Loading...' },
-  ];
+
 
   return (
     <Stack
@@ -84,9 +77,40 @@ export default function DashboardPage() {
       </Text>
 
       <Stack tokens={{ childrenGap: 20 }} wrap>
-        <Card title="User Information">
-          <DetailsList items={userItems} columns={userColumns} />
-        </Card>
+       
+
+       <Card title="User Information">
+  <Stack horizontal tokens={{ childrenGap: 20 }} verticalAlign="center">
+    <img
+      src={`/api/${user?.photo || 'uploads/default.png'}`}
+      width={100}
+      height={100}
+      style={{ borderRadius: '50%', objectFit: 'cover' }}
+      alt="User Photo"
+    />
+
+    <Stack tokens={{ childrenGap: 4 }}>
+      <Text variant="large" styles={{ root: { fontWeight: 600 } }}>
+        {user?.name ?? 'Loading...'}
+      </Text>
+
+      <Text variant="smallPlus" styles={{ root: { color: '#666' } }}>
+        Badge: {user?.badgeNumber ?? 'Loading...'}
+      </Text>
+
+      <Text variant="smallPlus" styles={{ root: { color: '#666' } }}>
+        Email: {user?.email ?? 'Loading...'}
+      </Text>
+
+      {user?.role && (
+        <Text variant="smallPlus" styles={{ root: { color: '#666' } }}>
+          Role: {user.role}
+        </Text>
+      )}
+    </Stack>
+  </Stack>
+</Card>
+
 
         <Card title="My IT Assets">
           <DetailsList items={assets} columns={assetColumns} />

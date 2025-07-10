@@ -29,7 +29,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       name: user.name,
       email: user.email,
-      badgeNumber: user.badgeNumber
+      badgeNumber: user.badgeNumber,
+      photo:user.photo,
+      role:user.role
     });
   } catch (error) {
     console.error('Database error:', error); // Log the error for debugging
