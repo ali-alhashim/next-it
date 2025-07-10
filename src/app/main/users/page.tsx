@@ -8,6 +8,12 @@ import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
 import { TextField } from '@fluentui/react/lib/TextField';
 import { Image, ImageFit } from '@fluentui/react/lib/Image';
 import { useRouter } from 'next/navigation';
+import { Button, Display } from '@fluentui/react-components';
+import {
+ 
+  ArrowUploadFilled,
+  ArrowDown12Filled
+} from "@fluentui/react-icons";
 
 interface User {
   id: string;
@@ -124,10 +130,80 @@ export default function UsersPage() {
     }
   };
 
+   // export all users as csv file without password field & photo 
+   function handelExport()
+   {
+         if (!users.length) return;
+
+        // Desired column headers
+        const headers = ['Name', 'Badge Number', 'Email', 'Role'];
+
+        // Map rows in correct column order
+        const rows = users.map((user) => [
+          user.name,
+          user.badgeNumber,
+          user.email,
+          user.role
+        ]);
+
+        // Generate CSV string
+        const csvContent = [
+          headers.join(','), // Header row
+          ...rows.map((row) =>
+            row.map((field) => `"${(field ?? '').toString().replace(/"/g, '""')}"`).join(',')
+          )
+        ].join('\n');
+
+        // Create and download the file
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'users.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+   }
+
+    // we will use hidden input type file open except only CSV get the file  send to api/users/import
+    function handelImport()
+   {
+      const csvFile = document.getElementById('csvFileId');
+      csvFile?.click();
+   }
+
+
+   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('csv', file);
+
+    fetch('/api/users/import', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    }).then((res) => {
+    if (res.ok) {
+      alert('Users imported successfully');
+    } else {
+      alert('Import failed');
+    }
+  });
+}
+
   return (
+    
     <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 32 } }}>
+      <input type="file" id="csvFileId" accept=".csv" style={{ display: 'none' }} onChange={handleFileChange} />
       <Stack horizontal horizontalAlign="space-between">
         <Text variant="xxLarge">Users</Text>
+
+        <Button icon={<ArrowUploadFilled />} text="Import Users" onClick={() => handelImport()} > Import Users</Button>
+         
+
+         <Button icon={<ArrowDown12Filled />} text="Export Users" onClick={() => handelExport()} > Export Users</Button>
+
         <PrimaryButton text="Add New User" onClick={() => router.push('/main/users/new')} />
       </Stack>
 

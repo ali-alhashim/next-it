@@ -14,7 +14,7 @@ export async function seedAdminUser() {
       badgeNumber: '0000',
       name: 'Administrator',
       password: hashedPassword,
-      role: 'admin',
+      role: 'Admin',
       createdAt: new Date(),
     });
     console.log('[Seed] Admin user created');
