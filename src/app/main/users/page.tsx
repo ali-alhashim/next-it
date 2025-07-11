@@ -142,38 +142,58 @@ export default function UsersPage() {
   };
 
    // export all users as csv file without password field & photo 
-   function handelExport()
-   {
-         if (!users.length) return;
+  async function handelExport() {
+  try {
+    const res = await fetch(`/api/users?page=0&pageSize=10000`, {
+      credentials: 'include',
+    });
 
-        // Desired column headers
-        const headers = ['Name', 'Badge Number', 'Email', 'Role'];
+    if (!res.ok) {
+      alert('Failed to fetch users for export');
+      return;
+    }
 
-        // Map rows in correct column order
-        const rows = users.map((user) => [
-          user.name,
-          user.badgeNumber,
-          user.email,
-          user.role
-        ]);
+    const data = await res.json();
+    const allUsers = data.users;
 
-        // Generate CSV string
-        const csvContent = [
-          headers.join(','), // Header row
-          ...rows.map((row) =>
-            row.map((field) => `"${(field ?? '').toString().replace(/"/g, '""')}"`).join(',')
-          )
-        ].join('\n');
+    if (!allUsers.length) {
+      alert('No users to export');
+      return;
+    }
 
-        // Create and download the file
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'users.csv';
-        a.click();
-        URL.revokeObjectURL(url);
-   }
+    // Desired column headers
+    const headers = ['Name', 'Badge Number', 'Email', 'Role'];
+
+    // Map rows in correct column order
+    const rows = allUsers.map((user: any) => [
+      user.name,
+      user.badgeNumber,
+      user.email,
+      user.role,
+    ]);
+
+    // Generate CSV string
+    const csvContent = [
+      headers.join(','), // Header row
+      ...rows.map((row: string[]) =>
+        row.map((field) => `"${(field ?? '').toString().replace(/"/g, '""')}"`).join(',')
+      ),
+    ].join('\n');
+
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'users.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Export error:', err);
+    alert('Export failed');
+  }
+}
+
 
     // we will use hidden input type file open except only CSV get the file  send to api/users/import
     function handelImport()
