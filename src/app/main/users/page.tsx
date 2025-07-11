@@ -1,5 +1,5 @@
 'use client';
-
+//src/app/main/users/page.tsx
 import { useEffect, useState, useMemo } from 'react';
 import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
@@ -36,17 +36,28 @@ export default function UsersPage() {
   const pageSize = 20;
   const totalPages = Math.ceil(totalUsers / pageSize);
 
+
+  const fetchUsers = async () => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+    search: search,
+    sortField: sortField || '',
+    sortOrder: sortAsc ? 'asc' : 'desc'
+  });
+
+  const res = await fetch(`/api/users?${params.toString()}`, { credentials: 'include' });
+  if (!res.ok) return;
+
+  const data = await res.json();
+  setUsers(data.users);
+  setTotalUsers(data.total);
+};
+
   // Fetch users from API
   useEffect(() => {
-    const fetchUsers = async () => {
-      const res = await fetch(`/api/users?page=${page}&pageSize=${pageSize}`, { credentials: 'include' });
-      if (!res.ok) return;
-      const data = await res.json();
-      setUsers(data.users);
-      setTotalUsers(data.total);
-    };
-    fetchUsers();
-  }, [page]);
+  fetchUsers();
+}, [page, search, sortField, sortAsc]);
 
   // Filter and sort locally (optional)
   const filtered = useMemo(() => {
@@ -186,6 +197,9 @@ export default function UsersPage() {
     }).then((res) => {
     if (res.ok) {
       alert('Users imported successfully');
+      //reload user list
+      fetchUsers();
+      
     } else {
       alert('Import failed');
     }
@@ -214,12 +228,12 @@ export default function UsersPage() {
       />
 
       <DetailsList
-        items={filtered}
+        items={users}
         columns={columns}
         layoutMode={DetailsListLayoutMode.justified}
         selectionMode={SelectionMode.none}
         styles={{ root: { marginTop: 10 } }}
-      />
+        />
 
       <Stack horizontal tokens={{ childrenGap: 8 }} verticalAlign="center">
         <DefaultButton
