@@ -12,7 +12,8 @@ import { Button, Display } from '@fluentui/react-components';
 import {
  
   ArrowUploadFilled,
-  ArrowDown12Filled
+  ArrowDown12Filled,
+  PersonPasskeyRegular
 } from "@fluentui/react-icons";
 
 interface User {
@@ -35,6 +36,37 @@ export default function UsersPage() {
   const [page, setPage] = useState(0);
   const pageSize = 20;
   const totalPages = Math.ceil(totalUsers / pageSize);
+
+
+  function handelResetPassword(badgeNumber:String)
+  {
+    //show prompt to get password value
+    // send post request to /api/users/reset-password/[badgeNumber]
+    // with the password
+
+     const newPassword = window.prompt(`Enter a new password for user ${badgeNumber}:`);
+     if (!newPassword) return;
+
+     fetch(`/api/users/reset-password/${badgeNumber}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ password: newPassword }),
+  })
+    .then(res => {
+      if (res.ok) {
+        alert('Password reset successfully.');
+      } else {
+        alert('Failed to reset password.');
+      }
+    })
+    .catch(() => {
+      alert('An error occurred while resetting the password.');
+    });
+    
+  }
 
 
   const fetchUsers = async () => {
@@ -97,7 +129,7 @@ export default function UsersPage() {
       key: 'name',
       name: 'Name',
       fieldName: 'name',
-      minWidth: 120,
+      minWidth: 200,
       isResizable: true,
       onColumnClick: () => handleSort('name'),
     },
@@ -129,6 +161,18 @@ export default function UsersPage() {
       minWidth: 100,
       isResizable: true,
       onColumnClick: () => handleSort('role'),
+    },
+    {
+      key: 'resetPassword',
+      name: 'Reset Password',
+      fieldName: 'resetPassword',
+      minWidth: 100,
+      isResizable: true,
+      onRender: (item: User) => (
+        <a style={{ color: '#0078d4', cursor: 'pointer' }} onClick={() => handelResetPassword(item.badgeNumber)}>
+          <PersonPasskeyRegular style={{ fontSize: 20 }} />
+        </a>
+      )
     },
   ];
 
