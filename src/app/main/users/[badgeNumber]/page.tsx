@@ -12,7 +12,7 @@ type User = {
   email: string;
   badgeNumber: string;
   role: string;
-  image?: string;
+  photo?: string;
 };
 
 const UserDetails = () => {
@@ -46,9 +46,9 @@ const UserDetails = () => {
   return (
     <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 32, maxWidth: 600 } }}>
       <Text variant="xxLarge">User Details</Text>
-      {user.image && (
+      {user.photo && (
         <Image
-          src={user.image}
+          src={"/api/"+user.photo}
           width={100}
           height={100}
           imageFit={ImageFit.cover}

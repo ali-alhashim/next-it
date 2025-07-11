@@ -1,6 +1,6 @@
 'use client';
 //src/app/main/users/page.tsx
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
 import { DetailsList, IColumn, SelectionMode, DetailsListLayoutMode } from '@fluentui/react/lib/DetailsList';
@@ -8,7 +8,7 @@ import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
 import { TextField } from '@fluentui/react/lib/TextField';
 import { Image, ImageFit } from '@fluentui/react/lib/Image';
 import { useRouter } from 'next/navigation';
-import { Button, Display } from '@fluentui/react-components';
+import { Button } from '@fluentui/react-components';
 import {
  
   ArrowUploadFilled,
@@ -91,28 +91,7 @@ export default function UsersPage() {
   fetchUsers();
 }, [page, search, sortField, sortAsc]);
 
-  // Filter and sort locally (optional)
-  const filtered = useMemo(() => {
-    let result = users;
-
-    if (search) {
-      result = result.filter((u) =>
-        u.name.toLowerCase().includes(search.toLowerCase()) ||
-        u.email.toLowerCase().includes(search.toLowerCase()) ||
-        u.badgeNumber.includes(search)
-      );
-    }
-
-    if (sortField) {
-      result = [...result].sort((a, b) => {
-        const valA = a[sortField as keyof User];
-        const valB = b[sortField as keyof User];
-        return (valA > valB ? 1 : -1) * (sortAsc ? 1 : -1);
-      });
-    }
-
-    return result;
-  }, [users, search, sortField, sortAsc]);
+  
 
   const columns: IColumn[] = [
     {
