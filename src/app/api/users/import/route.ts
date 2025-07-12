@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
       badgeNumber: row['Badge Number']?.trim(),
       email: row['Email']?.trim(),
       role: row['Role']?.trim(),
+      createdAt: new Date(),
     }));
 
     //insure the badge number not exist before insert if exist skip the line

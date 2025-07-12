@@ -19,7 +19,17 @@ const categoryOptions: IDropdownOption[] = [
   { key: 'Printer', text: 'Printer' },
   { key: 'Other', text: 'Other' },
   
+  
 ];
+
+const statusOptions:IDropdownOption[] = [
+  {key:'New', text:'New'},
+  {key:'Used', text:'Used'},
+  {key:'Old', text:'Old'},
+  {key:'Damaged', text:'Damaged'},
+  { key: 'Lost', text: 'Lost' },
+  { key: 'Stolen', text: 'Stolen' },
+]
 
 export default function AddDevicePage() {
   const router = useRouter();
@@ -27,8 +37,11 @@ export default function AddDevicePage() {
     serialNumber: '',
     category: '',
     model: '',
-    
-    
+    description:'',
+    manufacture:'',
+    invoiceNumber:'',
+    supplier:'',
+    status:'',
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -42,6 +55,11 @@ export default function AddDevicePage() {
     formData.append('serialNumber', form.serialNumber);
     formData.append('category', form.category);
     formData.append('model', form.model);
+    formData.append('description', form.description);
+    formData.append('manufacture', form.manufacture);
+    formData.append('invoiceNumber', form.invoiceNumber);
+    formData.append('supplier', form.supplier);
+    formData.append('status', form.status);
    
     
    
@@ -84,6 +102,49 @@ export default function AddDevicePage() {
         onChange={(_, v) => handleInputChange('model', v || '')}
         required
       />
+
+        <TextField
+        label="Description"
+        value={form.description}
+        onChange={(_, v) => handleInputChange('description', v || '')}
+        required
+      />
+      
+       <TextField
+        label="Manufacture"
+        value={form.manufacture}
+        onChange={(_, v) => handleInputChange('manufacture', v || '')}
+        required
+      />
+
+       <TextField
+        label="Invoice Number"
+        value={form.invoiceNumber}
+        onChange={(_, v) => handleInputChange('invoiceNumber', v || '')}
+        required
+      />
+
+      <TextField
+        label="Supplier"
+        value={form.supplier}
+        onChange={(_, v) => handleInputChange('supplier', v || '')}
+        required
+      />
+
+       <Dropdown
+        label="Status"
+        selectedKey={form.status}
+        onChange={(_, option) => handleInputChange('status', option?.key as string)}
+        options={statusOptions}
+        required
+      />
+      
+
+      
+
+      
+
+      
 
       
 
