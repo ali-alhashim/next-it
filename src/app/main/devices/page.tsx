@@ -86,6 +86,11 @@ const columns: IColumn[] = [
       fieldName: 'serialNumber',
       minWidth: 200,
       isResizable: true,
+      onRender: (item: Device) => (
+        <a style={{ color: '#0078d4', cursor: 'pointer' }} onClick={() => router.push(`/main/devices/${item.serialNumber}`)}>
+          {item.serialNumber}
+        </a>
+      ),
       onColumnClick: () => handleSort('serialNumber'),
     },
     {
@@ -102,7 +107,7 @@ const columns: IColumn[] = [
       fieldName: 'model',
       minWidth: 200,
       isResizable: true,
-      onColumnClick: () => handleSort('category'),
+      onColumnClick: () => handleSort('model'),
     },
 
       {
@@ -111,7 +116,25 @@ const columns: IColumn[] = [
       fieldName: 'manufacture',
       minWidth: 200,
       isResizable: true,
-      onColumnClick: () => handleSort('category'),
+      onColumnClick: () => handleSort('manufacture'),
+    },
+
+     {
+      key: 'description',
+      name: 'Description',
+      fieldName: 'description',
+      minWidth: 200,
+      isResizable: true,
+      onColumnClick: () => handleSort('description'),
+    },
+
+    {
+      key: 'status',
+      name: 'Status',
+      fieldName: 'status',
+      minWidth: 200,
+      isResizable: true,
+      onColumnClick: () => handleSort('status'),
     },
 ];
 
@@ -143,6 +166,7 @@ const columns: IColumn[] = [
       device.category,
       device.model,
       device.description,
+      device.status,
     ]);
 
     // Generate CSV string
@@ -207,7 +231,7 @@ const columns: IColumn[] = [
 
            <Button icon={<ArrowUploadFilled />} text="Import Devices" onClick={() => handelImport()} > Import Devices</Button>
 
-            <Button icon={<ArrowDown12Filled />} text="Export Users" onClick={() => handelExport()} > Export Users</Button>
+            <Button icon={<ArrowDown12Filled />} text="Export Devices" onClick={() => handelExport()} > Export Devices</Button>
 
             <PrimaryButton text="Add New Device" onClick={() => router.push('/main/devices/new')} />
 

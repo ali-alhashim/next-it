@@ -44,6 +44,10 @@ export async function GET(req: NextRequest) {
       id: device._id.toString(),
       serialNumber: device.serialNumber,
       category: device.category,
+      model:device.model,
+      manufacture:device.manufacture,
+      description:device.description,
+      status:device.status,
     }));
 
     return NextResponse.json({ devices: cleanDevices, total });
