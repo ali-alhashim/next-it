@@ -158,7 +158,7 @@ const columns: IColumn[] = [
     }
 
     // Desired column headers
-    const headers = ['serialNumber', 'category', 'model', 'description'];
+    const headers = ['serialNumber', 'category', 'model', 'description','manufacture','status'];
 
     // Map rows in correct column order
     const rows = allDevices.map((device: any) => [
@@ -166,6 +166,7 @@ const columns: IColumn[] = [
       device.category,
       device.model,
       device.description,
+      device.manufacture,
       device.status,
     ]);
 

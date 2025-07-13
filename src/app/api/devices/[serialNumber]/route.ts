@@ -1,0 +1,1 @@
+//src/app/api/devices/[serialNumber]/route.ts

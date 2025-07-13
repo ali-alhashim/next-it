@@ -1,3 +1,4 @@
+//src/app/main/devices/[serialNumber]/page.tsx
 import React from 'react'
 
 const DeviceDetail = () => {
