@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import {ArrowUploadFilled, ArrowDown12Filled} from "@fluentui/react-icons";
 import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button'; 
 import { TextField } from '@fluentui/react/lib/TextField';  
- 
+import { TooltipHost } from '@fluentui/react/lib/Tooltip'; 
 
 //src/app/main/devices
 
@@ -192,8 +192,18 @@ const columns: IColumn[] = [
   }
 }
 
- function handelImport()
+  let importURL ='';
+
+ function handelImport(importType:string)
    {
+      if(importType ==="DevicesList")
+      {
+         importURL = '/api/devices/import';
+      }
+      else if(importType ==="DevicesUserList")
+      {
+        importURL = '/api/devices/import-users';
+      }
       const csvFile = document.getElementById('csvFileId');
       csvFile?.click();
    }
@@ -205,7 +215,7 @@ const columns: IColumn[] = [
     const formData = new FormData();
     formData.append('csv', file);
 
-    fetch('/api/devices/import', {
+    fetch(importURL, {
       method: 'POST',
       body: formData,
       credentials: 'include',
@@ -230,7 +240,19 @@ const columns: IColumn[] = [
         <Stack horizontal horizontalAlign="space-between">
           <Text variant="xxLarge">Devices</Text>
 
-           <Button icon={<ArrowUploadFilled />} text="Import Devices" onClick={() => handelImport()} > Import Devices</Button>
+           <Button icon={<ArrowUploadFilled />} text="Import Devices" onClick={() => handelImport("DevicesList")} > Import Devices</Button>
+
+           
+           <TooltipHost content="[serialNumber, badgeNumber, receivedDate, handoverDate, note]">
+          <Button
+            icon={<ArrowUploadFilled />}
+            text="Import Devices Users"
+            onClick={() => handelImport("DevicesUserList")}
+          >
+            Import Devices Users
+          </Button>
+        </TooltipHost>
+          
 
             <Button icon={<ArrowDown12Filled />} text="Export Devices" onClick={() => handelExport()} > Export Devices</Button>
 
