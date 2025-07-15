@@ -48,6 +48,7 @@ export async function GET(req: NextRequest) {
       manufacture:device.manufacture,
       description:device.description,
       status:device.status,
+      users :device.users
     }));
 
     return NextResponse.json({ devices: cleanDevices, total });
