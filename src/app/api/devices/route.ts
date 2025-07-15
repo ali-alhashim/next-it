@@ -13,14 +13,11 @@ export async function GET(req: NextRequest) {
   try {
     const db = await connectDB();
     const devicesCol = db.collection('devices');
-
     const searchRegex = search ? new RegExp(search, 'i') : null;
 
-    // Aggregation pipeline
-    const pipeline: any[] = [
+    // total count before pagination
+    const totalCountPipeline: any[] = [
       { $unwind: { path: '$users', preserveNullAndEmptyArrays: true } },
-
-      // Match AFTER unwind so we can filter on users.badgeNumber
       ...(search
         ? [
             {
@@ -37,7 +34,33 @@ export async function GET(req: NextRequest) {
             },
           ]
         : []),
+      { $group: { _id: '$_id' } },
+      { $count: 'count' },
+    ];
 
+    const totalAgg = await devicesCol.aggregate(totalCountPipeline).toArray();
+    const total = totalAgg[0]?.count || 0;
+    const safeSkip = Math.min(page * pageSize, Math.max(total - pageSize, 0));
+
+    // Main aggregation
+    const pipeline: any[] = [
+      { $unwind: { path: '$users', preserveNullAndEmptyArrays: true } },
+      ...(search
+        ? [
+            {
+              $match: {
+                $or: [
+                  { serialNumber: { $regex: searchRegex } },
+                  { category: { $regex: searchRegex } },
+                  { model: { $regex: searchRegex } },
+                  { manufacture: { $regex: searchRegex } },
+                  { description: { $regex: searchRegex } },
+                  { 'users.badgeNumber': { $regex: searchRegex } },
+                ],
+              },
+            },
+          ]
+        : []),
       {
         $lookup: {
           from: 'users',
@@ -47,7 +70,6 @@ export async function GET(req: NextRequest) {
         },
       },
       { $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true } },
-
       {
         $group: {
           _id: '$_id',
@@ -68,38 +90,12 @@ export async function GET(req: NextRequest) {
           },
         },
       },
-
       { $sort: { [sortField]: sortOrder } },
-      { $skip: page * pageSize },
+      { $skip: safeSkip },
       { $limit: pageSize },
     ];
 
     const devices = await devicesCol.aggregate(pipeline).toArray();
-
-    // Recalculate total count with matching search
-    const totalCountPipeline: any[] = [
-      { $unwind: { path: '$users', preserveNullAndEmptyArrays: true } },
-      ...(search
-        ? [
-            {
-              $match: {
-                $or: [
-                  { serialNumber: { $regex: searchRegex } },
-                  { category: { $regex: searchRegex } },
-                  { model: { $regex: searchRegex } },
-                  { manufacture: { $regex: searchRegex } },
-                  { description: { $regex: searchRegex } },
-                  { 'users.badgeNumber': { $regex: searchRegex } },
-                ],
-              },
-            },
-          ]
-        : []),
-      { $group: { _id: null, count: { $sum: 1 } } },
-    ];
-
-    const totalAgg = await devicesCol.aggregate(totalCountPipeline).toArray();
-    const total = totalAgg[0]?.count || 0;
 
     const cleanDevices = devices.map((device) => ({
       id: device._id.toString(),
