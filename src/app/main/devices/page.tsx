@@ -27,6 +27,7 @@ interface DeviceUserHistory {
   receivedDate: string;
   handoverDate: string | null;
   note?: string;
+  userName?:string;
 }
 
 interface Device {
@@ -257,7 +258,11 @@ export default function DevicesPage() {
               <div key={user.id || user.badgeNumber} style={{ marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid #eee' }}>
                 <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 8 }} wrap>
                   <Text styles={{ root: { flexShrink: 1, minWidth: '150px' } }}>
-                   <Link href={`/main/users/${user.badgeNumber}`}>  <strong>{user.badgeNumber}</strong></Link> — {formatDate(user.receivedDate)} to{' '} {formatDate(user.handoverDate)}
+                   <Link href={`/main/users/${user.badgeNumber}`}> 
+                    <strong>{user.badgeNumber} <br/> {user.userName}</strong>
+                    </Link> 
+                     <br/>
+                     {formatDate(user.receivedDate)} to{' '} {formatDate(user.handoverDate)}
                     
                   </Text>
 

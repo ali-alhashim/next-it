@@ -1,7 +1,3 @@
-//src/app/api/devices
-
-
-
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 
@@ -18,40 +14,102 @@ export async function GET(req: NextRequest) {
     const db = await connectDB();
     const devicesCol = db.collection('devices');
 
-    // Build search filter (case-insensitive)
-    const filter = search
-      ? {
-          $or: [
-            { serialNumber: { $regex: search, $options: 'i' } },
-            { category: { $regex: search, $options: 'i' } },
-            { model: { $regex: search, $options: 'i' } },
-            { manufacture: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { 'users.badgeNumber': { $regex: search, $options: 'i' } },
-          ],
-        }
-      : {};
+    const searchRegex = search ? new RegExp(search, 'i') : null;
 
-    const total = await devicesCol.countDocuments(filter);
+    // Aggregation pipeline
+    const pipeline: any[] = [
+      { $unwind: { path: '$users', preserveNullAndEmptyArrays: true } },
 
-    const devices = await devicesCol
-      .find(filter)
-      .sort({ [sortField]: sortOrder })
-      .skip(page * pageSize)
-      .limit(pageSize)
-      .project({ password: 0 }) // exclude password
-      .toArray();
+      // Match AFTER unwind so we can filter on users.badgeNumber
+      ...(search
+        ? [
+            {
+              $match: {
+                $or: [
+                  { serialNumber: { $regex: searchRegex } },
+                  { category: { $regex: searchRegex } },
+                  { model: { $regex: searchRegex } },
+                  { manufacture: { $regex: searchRegex } },
+                  { description: { $regex: searchRegex } },
+                  { 'users.badgeNumber': { $regex: searchRegex } },
+                ],
+              },
+            },
+          ]
+        : []),
 
-    // Add `id` field 
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'users.badgeNumber',
+          foreignField: 'badgeNumber',
+          as: 'userInfo',
+        },
+      },
+      { $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true } },
+
+      {
+        $group: {
+          _id: '$_id',
+          serialNumber: { $first: '$serialNumber' },
+          category: { $first: '$category' },
+          model: { $first: '$model' },
+          manufacture: { $first: '$manufacture' },
+          description: { $first: '$description' },
+          status: { $first: '$status' },
+          users: {
+            $push: {
+              badgeNumber: '$users.badgeNumber',
+              userName: '$userInfo.name',
+              receivedDate: '$users.receivedDate',
+              handoverDate: '$users.handoverDate',
+              note: '$users.note',
+            },
+          },
+        },
+      },
+
+      { $sort: { [sortField]: sortOrder } },
+      { $skip: page * pageSize },
+      { $limit: pageSize },
+    ];
+
+    const devices = await devicesCol.aggregate(pipeline).toArray();
+
+    // Recalculate total count with matching search
+    const totalCountPipeline: any[] = [
+      { $unwind: { path: '$users', preserveNullAndEmptyArrays: true } },
+      ...(search
+        ? [
+            {
+              $match: {
+                $or: [
+                  { serialNumber: { $regex: searchRegex } },
+                  { category: { $regex: searchRegex } },
+                  { model: { $regex: searchRegex } },
+                  { manufacture: { $regex: searchRegex } },
+                  { description: { $regex: searchRegex } },
+                  { 'users.badgeNumber': { $regex: searchRegex } },
+                ],
+              },
+            },
+          ]
+        : []),
+      { $group: { _id: null, count: { $sum: 1 } } },
+    ];
+
+    const totalAgg = await devicesCol.aggregate(totalCountPipeline).toArray();
+    const total = totalAgg[0]?.count || 0;
+
     const cleanDevices = devices.map((device) => ({
       id: device._id.toString(),
       serialNumber: device.serialNumber,
       category: device.category,
-      model:device.model,
-      manufacture:device.manufacture,
-      description:device.description,
-      status:device.status,
-      users :device.users
+      model: device.model,
+      manufacture: device.manufacture,
+      description: device.description,
+      status: device.status,
+      users: device.users,
     }));
 
     return NextResponse.json({ devices: cleanDevices, total });
@@ -60,4 +118,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-
