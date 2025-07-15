@@ -88,6 +88,11 @@ For initial testing and setup, you can use the following administrator credentia
 
 ---
 
+## .env.local
+NEXTAUTH_SECRET=your_generated_secret_here
+MONGODB_URI=mongodb://localhost:27017
+NEXTAUTH_URL=http://localhost:3000
+
 ## Project Structure
 
 A brief overview of key directories and files:

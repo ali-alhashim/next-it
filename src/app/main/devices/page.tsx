@@ -19,6 +19,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowUploadFilled, ArrowDown12Filled } from "@fluentui/react-icons";
 import { Button as FluentUIButton } from '@fluentui/react-components'; // Alias to avoid conflict
 import { TooltipHost } from '@fluentui/react/lib/Tooltip';
+import Link from 'next/link';
 
 interface DeviceUserHistory {
   id: string;
@@ -40,8 +41,14 @@ interface Device {
   users: DeviceUserHistory[];
 }
 
-const formatDate = (dateStr?: string | null) =>
-  dateStr ? new Date(dateStr).toISOString().slice(0, 10) : 'Still Assigned';
+const formatDate = (dateStr?: string | null) => {
+  if (!dateStr) return 'Still Assigned';
+
+  const isoStr = dateStr.replace(' ', 'T');
+  const parsedDate = new Date(isoStr);
+
+  return isNaN(parsedDate.getTime()) ? 'Invalid Date' : parsedDate.toISOString().slice(0, 10);
+};
 
 export default function DevicesPage() {
   const router = useRouter();
@@ -243,8 +250,8 @@ export default function DevicesPage() {
               <div key={user.id || user.badgeNumber} style={{ marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid #eee' }}>
                 <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 8 }} wrap>
                   <Text styles={{ root: { flexShrink: 1, minWidth: '150px' } }}>
-                    <strong>{user.badgeNumber}</strong> — {formatDate(user.receivedDate)} to{' '}
-                    {formatDate(user.handoverDate)}
+                   <Link href={`/main/users/${user.badgeNumber}`}>  <strong>{user.badgeNumber}</strong></Link> — {formatDate(user.receivedDate)} to{' '} {formatDate(user.handoverDate)}
+                    
                   </Text>
                   {!user.handoverDate && (
                     <DefaultButton

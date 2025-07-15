@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get('page') || '0');
   const pageSize = parseInt(searchParams.get('pageSize') || '20');
   const search = searchParams.get('search')?.trim() || '';
-  const sortField = searchParams.get('sortField') || 'name';
+  const sortField = searchParams.get('sortField') || 'serialNumber';
   const sortOrder = searchParams.get('sortOrder') === 'desc' ? -1 : 1;
 
   try {
@@ -24,7 +24,10 @@ export async function GET(req: NextRequest) {
           $or: [
             { serialNumber: { $regex: search, $options: 'i' } },
             { category: { $regex: search, $options: 'i' } },
-            { badgeNumber: { $regex: search, $options: 'i' } },
+            { model: { $regex: search, $options: 'i' } },
+            { manufacture: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } },
+            { 'users.badgeNumber': { $regex: search, $options: 'i' } },
           ],
         }
       : {};
