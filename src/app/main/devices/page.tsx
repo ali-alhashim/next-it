@@ -42,12 +42,19 @@ interface Device {
 }
 
 const formatDate = (dateStr?: string | null) => {
-  if (!dateStr) return 'Still Assigned';
+  if (!dateStr || dateStr === 'NULL') return 'Still Assigned';
 
   const isoStr = dateStr.replace(' ', 'T');
   const parsedDate = new Date(isoStr);
 
-  return isNaN(parsedDate.getTime()) ? 'Invalid Date' : parsedDate.toISOString().slice(0, 10);
+  if (isNaN(parsedDate.getTime())) return 'Invalid Date';
+
+  // Format without affecting timezone
+  const year = parsedDate.getFullYear();
+  const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+  const day = String(parsedDate.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 };
 
 export default function DevicesPage() {
@@ -253,13 +260,16 @@ export default function DevicesPage() {
                    <Link href={`/main/users/${user.badgeNumber}`}>  <strong>{user.badgeNumber}</strong></Link> — {formatDate(user.receivedDate)} to{' '} {formatDate(user.handoverDate)}
                     
                   </Text>
-                  {!user.handoverDate && (
-                    <DefaultButton
-                      text="Send Handover"
-                      onClick={() => openDialog(item.serialNumber, user.badgeNumber)}
-                      styles={{ root: { marginLeft: 12, flexShrink: 0 } }}
-                    />
-                  )}
+
+                 {(user.handoverDate === 'NULL' || !user.handoverDate) && (
+                  <DefaultButton
+                    text="Send Handover"
+                    onClick={() => openDialog(item.serialNumber, user.badgeNumber)}
+                    styles={{ root: { marginLeft: 12, flexShrink: 0 } }}
+                  />
+                )}
+
+
                 </Stack>
                 {user.note && (
                   <Text styles={{ root: { fontSize: 12, color: '#555', marginTop: 4 } }}>

@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       {
         serialNumber,
         'users.badgeNumber': badgeNumber,
-         'users.handoverDate': { $in: [null, ''] }, // match handoverDate either null or empty string
+         'users.handoverDate': { $in: [null, '','NULL'] }, // match handoverDate either null or empty string
       },
       {
         $set: {
