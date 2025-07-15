@@ -3,16 +3,14 @@ import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
 
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
+  const photoName = url.pathname.split('/').pop(); // or req.nextUrl.pathname.split('/').pop()
 
+  if (!photoName) {
+    return new NextResponse('Missing photo name', { status: 400 });
+  }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { photoName: string } }
-) {
-  // 🔐 Optional auth check
-
-
-  const { photoName } = params;
   const filePath = path.join(process.cwd(), 'uploads', photoName);
 
   try {
@@ -22,7 +20,6 @@ export async function GET(
 
     const fileBuffer = await fs.readFile(filePath);
 
-    // Guess content type by extension
     const ext = path.extname(photoName).toLowerCase();
     const contentType = {
       '.jpg': 'image/jpeg',

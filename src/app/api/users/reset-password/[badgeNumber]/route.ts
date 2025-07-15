@@ -1,16 +1,16 @@
-//src/app/api/users/reset-password/[badgeNumber]/route.ts
+// src/app/api/users/reset-password/[badgeNumber]/route.ts
 
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
 
-export async function POST(req: NextRequest, { params }: { params: { badgeNumber: string } }) {
+export async function POST(req: NextRequest) {
   try {
-    const { badgeNumber } = params;
+    const badgeNumber = req.nextUrl.pathname.split('/').pop(); // extract from URL
     const { password } = await req.json();
 
     if (!password || !badgeNumber) {
-      return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
+      return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -22,12 +22,12 @@ export async function POST(req: NextRequest, { params }: { params: { badgeNumber
     );
 
     if (result.modifiedCount === 0) {
-      return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    return new Response(JSON.stringify({ success: true }));
+    return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Reset Password Error:', err);
-    return new Response(JSON.stringify({ error: 'Server error' }), { status: 500 });
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

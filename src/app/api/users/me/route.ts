@@ -2,7 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { getServerSession } from 'next-auth'; // Import getServerSession
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'; // Import your authOptions
+import { authOptions } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   // Get the user session using getServerSession
