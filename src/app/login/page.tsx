@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useId } from 'react';
+import { useState, useId, useEffect } from 'react';
 import { TextField } from '@fluentui/react/lib/TextField';
 import { PrimaryButton } from '@fluentui/react/lib/Button';
 import { Stack } from '@fluentui/react/lib/Stack';
@@ -14,6 +14,11 @@ export default function LoginPage() {
   const badgeId = useId();
   const passId = useId();
   const router = useRouter();
+
+
+  useEffect(() => {
+  fetch('/api/seed'); // triggers only on load
+}, []);
 
   const handleLogin = async () => {
     setError('');

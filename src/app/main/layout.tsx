@@ -211,8 +211,7 @@ export default function  RootLayout ({ children }: { children: React.ReactNode }
   
 
   return (
-    <html lang="en">
-      <body style={{ margin: 0 }}>
+   
         <FluentProvider theme={webLightTheme}>
           <div className={styles.root}>
             <NavDrawer
@@ -313,7 +312,6 @@ export default function  RootLayout ({ children }: { children: React.ReactNode }
             
           </div>
         </FluentProvider>
-      </body>
-    </html>
+    
   );
 }

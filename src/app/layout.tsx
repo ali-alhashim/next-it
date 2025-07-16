@@ -1,16 +1,8 @@
 // src/app/layout.tsx
-
-import { seedAdminUser } from '@/lib/seedAdmin';
-
-
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  await seedAdminUser();
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        {children}
-        </body>
+      <body>{children}</body>
     </html>
   );
 }
