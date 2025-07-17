@@ -1,9 +1,15 @@
 'use client';
 
-import { useState, useId, useEffect } from 'react';
-import { TextField } from '@fluentui/react/lib/TextField';
-import { PrimaryButton } from '@fluentui/react/lib/Button';
-import { Stack } from '@fluentui/react/lib/Stack';
+import { useState, useEffect } from 'react';
+import {
+  Box,
+  Button,
+  Container,
+  TextField,
+  Typography,
+  Stack,
+  Paper,
+} from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 
@@ -11,26 +17,22 @@ export default function LoginPage() {
   const [badgeNumber, setBadgeNumber] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const badgeId = useId();
-  const passId = useId();
   const router = useRouter();
 
-
   useEffect(() => {
-  fetch('/api/seed'); // triggers only on load
-}, []);
+    fetch('/api/seed'); // triggers only on load
+  }, []);
 
   const handleLogin = async () => {
     setError('');
 
     const res = await signIn('credentials', {
       redirect: false,
-     
-      badgeNumber: badgeNumber, 
+      badgeNumber,
       password,
     });
 
-     console.log('signIn response:', res);
+    console.log('signIn response:', res);
 
     if (res?.error) {
       setError(res.error);
@@ -40,54 +42,49 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '90vh',
-        minWidth: '90vw',
-        background: '#f3f2f1',
-        padding: '20px',
-      }}
+    <Box
+      minHeight="100vh"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      bgcolor="#f3f2f1"
     >
-      <div
-        style={{
-          background: 'white',
-          padding: 32,
-          borderRadius: 8,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          maxWidth: 400,
-          width: '100%',
-        }}
-      >
-        <h1 style={{ fontSize: 24, marginBottom: 20, textAlign: 'center' }}>
-          Login to Next-IT
-        </h1>
+      <Container maxWidth="xs">
+        <Paper elevation={3} sx={{ padding: 4, borderRadius: 2 }}>
+          <Typography variant="h5" align="center" gutterBottom>
+            Login to Next-IT
+          </Typography>
 
-        <Stack tokens={{ childrenGap: 15 }}>
-          <TextField
-            id={badgeId}
-            label="Badge Number"
-            value={badgeNumber}
-            onChange={(e, val) => setBadgeNumber(val || '')}
-            required
-          />
-          <TextField
-            id={passId}
-            label="Password"
-            type="password"
-            canRevealPassword
-            value={password}
-            onChange={(e, val) => setPassword(val || '')}
-            required
-          />
+          <Stack spacing={2}>
+            <TextField
+              label="Badge Number"
+              value={badgeNumber}
+              onChange={(e) => setBadgeNumber(e.target.value)}
+              required
+              fullWidth
+            />
 
-          {error && <p style={{ color: 'red' }}>{error}</p>}
+            <TextField
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              fullWidth
+            />
 
-          <PrimaryButton text="Login" onClick={handleLogin} />
-        </Stack>
-      </div>
-    </div>
+            {error && (
+              <Typography color="error" variant="body2">
+                {error}
+              </Typography>
+            )}
+
+            <Button variant="contained" fullWidth onClick={handleLogin}>
+              Login
+            </Button>
+          </Stack>
+        </Paper>
+      </Container>
+    </Box>
   );
 }

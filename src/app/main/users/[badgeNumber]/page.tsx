@@ -1,11 +1,14 @@
 'use client';
-// src/app/main/users/[badge]/page.tsx
+
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Stack } from '@fluentui/react/lib/Stack';
-import { Text } from '@fluentui/react/lib/Text';
-import { Image, ImageFit } from '@fluentui/react/lib/Image';
-import { Spinner } from '@fluentui/react/lib/Spinner';
+import {
+  Box,
+  Typography,
+  Avatar,
+  CircularProgress,
+  Stack as MuiStack,
+} from '@mui/material';
 
 type User = {
   name: string;
@@ -40,26 +43,46 @@ const UserDetails = () => {
     }
   }, [badgeNumber]);
 
-  if (loading) return <Spinner label="Loading user..." />;
-  if (!user) return <Text variant="large">User not found.</Text>;
+  if (loading) {
+    return (
+      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Typography variant="h6">User not found.</Typography>
+      </Box>
+    );
+  }
 
   return (
-    <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 32, maxWidth: 600 } }}>
-      <Text variant="xxLarge">User Details</Text>
+    <MuiStack spacing={2} sx={{ p: 4, maxWidth: 600 }}>
+      <Typography variant="h4">User Details</Typography>
+
       {user.photo && (
-        <Image
-          src={"/api/"+user.photo}
-          width={100}
-          height={100}
-          imageFit={ImageFit.cover}
-          styles={{ root: { borderRadius: '50%' } }}
+        <Avatar
+          src={`/api/${user.photo}`}
+          sx={{ width: 100, height: 100 }}
         />
       )}
-      <Text variant="large"><strong>Name:</strong> {user.name}</Text>
-      <Text variant="large"><strong>Email:</strong> {user.email}</Text>
-      <Text variant="large"><strong>Badge Number:</strong> {user.badgeNumber}</Text>
-      <Text variant="large"><strong>Role:</strong> {user.role}</Text>
-    </Stack>
+
+      <Typography variant="body1">
+        <strong>Name:</strong> {user.name}
+      </Typography>
+      <Typography variant="body1">
+        <strong>Email:</strong> {user.email}
+      </Typography>
+      <Typography variant="body1">
+        <strong>Badge Number:</strong> {user.badgeNumber}
+      </Typography>
+      <Typography variant="body1">
+        <strong>Role:</strong> {user.role}
+      </Typography>
+    </MuiStack>
   );
 };
 

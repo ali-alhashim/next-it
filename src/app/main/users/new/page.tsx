@@ -1,25 +1,23 @@
 'use client';
-//src/app/main/users/new/page.tsx
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Stack,
+  Box,
   TextField,
-  Dropdown,
-  IDropdownOption,
-  PrimaryButton,
-  Label,
-} from '@fluentui/react';
-import { Image, ImageFit } from '@fluentui/react/lib/Image';
-
-const roleOptions: IDropdownOption[] = [
-  { key: 'Admin', text: 'Admin' },
-  { key: 'IT', text: 'IT' },
-  { key: 'User', text: 'User' },
-];
+  Button,
+  InputLabel,
+  MenuItem,
+  Select,
+  FormControl,
+  Avatar,
+  Typography,
+  Stack as MuiStack,
+} from '@mui/material';
 
 export default function AddUserPage() {
   const router = useRouter();
+
   const [form, setForm] = useState({
     name: '',
     badgeNumber: '',
@@ -57,7 +55,7 @@ export default function AddUserPage() {
     const res = await fetch('/api/users/new', {
       method: 'POST',
       body: formData,
-      credentials: 'include'
+      credentials: 'include',
     });
 
     if (res.ok) {
@@ -68,60 +66,70 @@ export default function AddUserPage() {
   };
 
   return (
-    <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 32, maxWidth: 600 } }}>
-      <h2>Add New User</h2>
+    <MuiStack spacing={3} sx={{ maxWidth: 600, p: 4 }}>
+      <Typography variant="h5">Add New User</Typography>
 
       <TextField
         label="Name"
         value={form.name}
-        onChange={(_, v) => handleInputChange('name', v || '')}
+        onChange={(e) => handleInputChange('name', e.target.value)}
         required
+        fullWidth
       />
 
       <TextField
         label="Badge Number"
         value={form.badgeNumber}
-        onChange={(_, v) => handleInputChange('badgeNumber', v || '')}
+        onChange={(e) => handleInputChange('badgeNumber', e.target.value)}
         required
+        fullWidth
       />
 
       <TextField
         label="Email"
         value={form.email}
-        onChange={(_, v) => handleInputChange('email', v || '')}
+        onChange={(e) => handleInputChange('email', e.target.value)}
         required
+        fullWidth
       />
 
-      <Dropdown
-        label="Role"
-        selectedKey={form.role}
-        onChange={(_, option) => handleInputChange('role', option?.key as string)}
-        options={roleOptions}
-        required
-      />
+      <FormControl fullWidth required>
+        <InputLabel id="role-label">Role</InputLabel>
+        <Select
+          labelId="role-label"
+          value={form.role}
+          label="Role"
+          onChange={(e) => handleInputChange('role', e.target.value)}
+        >
+          <MenuItem value="Admin">Admin</MenuItem>
+          <MenuItem value="IT">IT</MenuItem>
+          <MenuItem value="User">User</MenuItem>
+        </Select>
+      </FormControl>
 
       <TextField
         label="Password"
         type="password"
-        canRevealPassword
         value={form.password}
-        onChange={(_, v) => handleInputChange('password', v || '')}
+        onChange={(e) => handleInputChange('password', e.target.value)}
         required
+        fullWidth
       />
 
-      <Label>Photo</Label>
-      <input type="file" accept="image/*" onChange={handleFileChange} />
-      {form.photoPreview && (
-        <Image
-          src={form.photoPreview}
-          width={80}
-          height={80}
-          imageFit={ImageFit.cover}
-          styles={{ root: { borderRadius: '50%', marginTop: 10 } }}
-        />
-      )}
+      <Box>
+        <InputLabel>Photo</InputLabel>
+        <input type="file" accept="image/*" onChange={handleFileChange} />
+        {form.photoPreview && (
+          <Avatar
+            src={form.photoPreview}
+            sx={{ width: 80, height: 80, mt: 2 }}
+          />
+        )}
+      </Box>
 
-      <PrimaryButton text="Add User" onClick={handleSubmit} />
-    </Stack>
+      <Button variant="contained" onClick={handleSubmit}>
+        Add User
+      </Button>
+    </MuiStack>
   );
 }

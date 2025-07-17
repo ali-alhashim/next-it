@@ -1,25 +1,36 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react'; // Import useCallback
+import React, { useEffect, useState, useCallback } from 'react';
 import {
-  DetailsList,
-  IColumn,
-  SelectionMode,
-  DetailsListLayoutMode,
-} from '@fluentui/react/lib/DetailsList';
-import { Stack } from '@fluentui/react/lib/Stack';
-import { Text } from '@fluentui/react/lib/Text';
-import { TextField } from '@fluentui/react/lib/TextField';
-import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
-import { Spinner, SpinnerSize } from '@fluentui/react/lib/Spinner';
-import { Dialog, DialogType, DialogFooter } from '@fluentui/react/lib/Dialog';
-import { DatePicker } from '@fluentui/react/lib/DatePicker';
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useRouter } from 'next/navigation';
-
-import { ArrowUploadFilled, ArrowDown12Filled } from "@fluentui/react-icons";
-import { Button as FluentUIButton } from '@fluentui/react-components'; // Alias to avoid conflict
-import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 import Link from 'next/link';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import DownloadIcon from '@mui/icons-material/Download';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'; // New import for history info
 
 interface DeviceUserHistory {
   id: string;
@@ -27,7 +38,7 @@ interface DeviceUserHistory {
   receivedDate: string;
   handoverDate: string | null;
   note?: string;
-  userName?:string;
+  userName?: string;
 }
 
 interface Device {
@@ -50,7 +61,6 @@ const formatDate = (dateStr?: string | null) => {
 
   if (isNaN(parsedDate.getTime())) return 'Invalid Date';
 
-  // Format without affecting timezone
   const year = parsedDate.getFullYear();
   const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
   const day = String(parsedDate.getDate()).padStart(2, '0');
@@ -76,31 +86,30 @@ export default function DevicesPage() {
   const [selectedDeviceSerial, setSelectedDeviceSerial] = useState('');
   const [selectedBadge, setSelectedBadge] = useState('');
   const [handoverNote, setHandoverNote] = useState('');
-  const [handoverDate, setHandoverDate] = useState<Date | undefined>(undefined);
+  const [handoverDate, setHandoverDate] = useState<Date | null>(null);
   const [currentImportURL, setCurrentImportURL] = useState('');
 
   const totalPages = Math.max(1, Math.ceil(totalDevices / pageSize));
 
-  // Effect to set isClient to true once the component mounts on the client
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Define fetchDevices using useCallback to memoize it and prevent unnecessary re-creations
   const fetchDevices = useCallback(async () => {
     setIsLoading(true);
     const params = new URLSearchParams({
       page: page.toString(),
       pageSize: pageSize.toString(),
-      search: search,
+      search,
       sortField: sortField || '',
-      sortOrder: sortAsc ? 'asc' : 'desc'
+      sortOrder: sortAsc ? 'asc' : 'desc',
     });
 
     try {
-      const res = await fetch(`/api/devices?${params.toString()}`, { credentials: 'include' });
+      const res = await fetch(`/api/devices?${params.toString()}`, {
+        credentials: 'include',
+      });
       if (!res.ok) {
-        console.error('Failed to fetch devices:', res.status, res.statusText);
         setDevices([]);
         setTotalDevices(0);
         return;
@@ -109,22 +118,18 @@ export default function DevicesPage() {
       const data = await res.json();
       setDevices(data.devices);
       setTotalDevices(data.total);
-    } catch (error) {
-      console.error('Error fetching devices:', error);
+    } catch {
       setDevices([]);
       setTotalDevices(0);
     } finally {
       setIsLoading(false);
     }
-  }, [page, search, sortField, sortAsc]); // Dependencies for fetchDevices
+  }, [page, search, sortField, sortAsc]);
 
-  // Effect to trigger fetchDevices when dependencies change, and only if client-side
   useEffect(() => {
-    if (!isClient) {
-      return;
-    }
+    if (!isClient) return;
     fetchDevices();
-  }, [page, search, sortField, sortAsc, isClient, fetchDevices]); // Add fetchDevices to dependency array
+  }, [page, search, sortField, sortAsc, isClient, fetchDevices]);
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -139,7 +144,7 @@ export default function DevicesPage() {
     setSelectedDeviceSerial(serial);
     setSelectedBadge(badge);
     setHandoverNote('');
-    setHandoverDate(undefined);
+    setHandoverDate(null);
     setDialogVisible(true);
   };
 
@@ -165,135 +170,24 @@ export default function DevicesPage() {
       if (res.ok) {
         alert('Request sent successfully');
         setDialogVisible(false);
-        fetchDevices(); // Re-fetch to update the list
+        fetchDevices();
       } else {
         const errorText = await res.text();
-        try {
-          const errorData = JSON.parse(errorText);
-          alert(`Failed to send request: ${errorData.message || 'Unknown error'}`);
-        } catch {
-          alert(`Failed to send request: ${errorText || 'Unknown error'}`);
-        }
+        alert(`Failed to send request: ${errorText}`);
       }
-    } catch (error) {
-      console.error('Error sending handover request:', error);
+    } catch {
       alert('An unexpected error occurred while sending the request.');
     }
   };
 
-  const columns: IColumn[] = [
-    {
-      key: 'serialNumber',
-      name: 'Serial Number',
-      fieldName: 'serialNumber',
-      minWidth: 120,
-      isResizable: true,
-      onRender: (item: Device | undefined) => {
-        if (!item) return <Text>-</Text>;
-        return (
-          <a
-            style={{ color: '#0078d4', cursor: 'pointer' }}
-            onClick={() => router.push(`/main/devices/${item.serialNumber}`)}
-          >
-            {item.serialNumber}
-          </a>
-        );
-      },
-      onColumnClick: () => handleSort('serialNumber'),
-    },
-    {
-      key: 'category',
-      name: 'Category',
-      fieldName: 'category',
-      minWidth: 80,
-      isResizable: true,
-      onColumnClick: () => handleSort('category'),
-    },
-    {
-      key: 'model',
-      name: 'Model',
-      fieldName: 'model',
-      minWidth: 100,
-      isResizable: true,
-      onColumnClick: () => handleSort('model'),
-    },
-    {
-      key: 'manufacture',
-      name: 'Manufacture',
-      fieldName: 'manufacture',
-      minWidth: 120,
-      isResizable: true,
-      onColumnClick: () => handleSort('manufacture'),
-    },
-    {
-      key: 'description',
-      name: 'Description',
-      fieldName: 'description',
-      minWidth: 150,
-      isResizable: true,
-      onColumnClick: () => handleSort('description'),
-    },
-    {
-      key: 'status',
-      name: 'Status',
-      fieldName: 'status',
-      minWidth: 80,
-      isResizable: true,
-      onColumnClick: () => handleSort('status'),
-    },
-    {
-      key: 'users',
-      name: 'Users',
-      fieldName: 'users',
-      minWidth: 300,
-      isResizable: true,
-      onRender: (item: Device | undefined) => {
-        if (!item || !item.users || item.users.length === 0) {
-          return <Text styles={{ root: { color: '#888' } }}>No Users Assigned</Text>;
-        }
-
-        return (
-          <>
-            {item.users.map((user) => (
-              <div key={user.id || user.badgeNumber} style={{ marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid #eee' }}>
-                <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 8 }} wrap>
-                  <Text styles={{ root: { flexShrink: 1, minWidth: '150px' } }}>
-                   <Link href={`/main/users/${user.badgeNumber}`}> 
-                    <strong>{user.badgeNumber} <br/> {user.userName}</strong>
-                    </Link> 
-                     <br/>
-                     {formatDate(user.receivedDate)} to{' '} {formatDate(user.handoverDate)}
-                    
-                  </Text>
-
-                 {(user.handoverDate === 'NULL' || !user.handoverDate) && (
-                  <DefaultButton
-                    text="Send Handover"
-                    onClick={() => openDialog(item.serialNumber, user.badgeNumber)}
-                    styles={{ root: { marginLeft: 12, flexShrink: 0 } }}
-                  />
-                )}
-
-
-                </Stack>
-                {user.note && (
-                  <Text styles={{ root: { fontSize: 12, color: '#555', marginTop: 4 } }}>
-                    Note: {user.note}
-                  </Text>
-                )}
-              </div>
-            ))}
-          </>
-        );
-      },
-    },
-  ];
-
-  async function handelExport() {
+  async function handleExport() {
     try {
-      const res = await fetch(`/api/devices?page=0&pageSize=${totalDevices > 0 ? totalDevices : 10000}`, {
-        credentials: 'include',
-      });
+      const res = await fetch(
+        `/api/devices?page=0&pageSize=${totalDevices > 0 ? totalDevices : 10000}`,
+        {
+          credentials: 'include',
+        }
+      );
 
       if (!res.ok) {
         alert('Failed to fetch devices for export');
@@ -308,7 +202,14 @@ export default function DevicesPage() {
         return;
       }
 
-      const headers = ['serialNumber', 'category', 'model', 'description', 'manufacture', 'status'];
+      const headers = [
+        'serialNumber',
+        'category',
+        'model',
+        'description',
+        'manufacture',
+        'status',
+      ];
 
       const rows = allDevices.map((device: any) => [
         device.serialNumber,
@@ -335,17 +236,16 @@ export default function DevicesPage() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Export error:', err);
+    } catch {
       alert('Export failed');
     }
   }
 
-  function handelImport(importType: string) {
+  function handleImport(importType: string) {
     let urlToSet = '';
-    if (importType === "DevicesList") {
+    if (importType === 'DevicesList') {
       urlToSet = '/api/devices/import';
-    } else if (importType === "DevicesUserList") {
+    } else if (importType === 'DevicesUserList') {
       urlToSet = '/api/devices/import-users';
     }
     setCurrentImportURL(urlToSet);
@@ -368,134 +268,298 @@ export default function DevicesPage() {
       method: 'POST',
       body: formData,
       credentials: 'include',
-    }).then((res) => {
-      if (res.ok) {
-        alert('Data imported successfully');
-        fetchDevices();
-      } else {
-        res.text().then(errorText => {
-          try {
-            const errorJson = JSON.parse(errorText);
-            alert(`Import failed: ${errorJson.message || 'Unknown error'}`);
-          } catch {
-            alert(`Import failed: ${errorText || 'Unknown error'}`);
-          }
-        }).catch(() => {
-          alert('Import failed: Server responded with an error.');
-        });
-      }
-    }).catch(error => {
-      console.error('Fetch error during import:', error);
-      alert('Import failed due to network error or server not reachable.');
-    });
+    })
+      .then((res) => {
+        if (res.ok) {
+          alert('Data imported successfully');
+          fetchDevices();
+        } else {
+          res.text().then((errorText) => {
+            alert(`Import failed: ${errorText}`);
+          });
+        }
+      })
+      .catch(() => {
+        alert('Import failed due to network error or server not reachable.');
+      });
   }
 
   return (
-    <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 32 } }}>
-      <Text variant="xxLarge" styles={{ root: { fontWeight: 'bold' } }}>Devices</Text>
+    <Box p={4}>
+      <Typography variant="h4" fontWeight="bold" mb={3}>
+        Devices
+      </Typography>
 
-      <input type="file" id="csvFileId" accept=".csv" style={{ display: 'none' }} onChange={handleFileChange} />
+      <input
+        type="file"
+        id="csvFileId"
+        accept=".csv"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
 
       {!isClient ? (
-        <Stack horizontalAlign="center" verticalAlign="center" styles={{ root: { height: '300px' } }}>
-          <Spinner size={SpinnerSize.large} label="Loading page..." />
-        </Stack>
+        <Box display="flex" justifyContent="center" alignItems="center" height={300}>
+          <CircularProgress size={60} />
+        </Box>
       ) : (
         <>
-          <Stack horizontal horizontalAlign="space-between" verticalAlign="center">
-            <FluentUIButton icon={<ArrowUploadFilled />} onClick={() => handelImport("DevicesList")}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
+            <Button
+              startIcon={<UploadFileIcon />}
+              onClick={() => handleImport('DevicesList')}
+              variant="outlined"
+            >
               Import Devices
-            </FluentUIButton>
+            </Button>
 
-            <TooltipHost content="[serialNumber, badgeNumber, receivedDate, handoverDate, note]">
-              <FluentUIButton icon={<ArrowUploadFilled />} onClick={() => handelImport("DevicesUserList")}>
+            <Tooltip title="[serialNumber, badgeNumber, receivedDate, handoverDate, note]">
+              <Button
+                startIcon={<UploadFileIcon />}
+                onClick={() => handleImport('DevicesUserList')}
+                variant="outlined"
+              >
                 Import Device Users
-              </FluentUIButton>
-            </TooltipHost>
+              </Button>
+            </Tooltip>
 
-            <FluentUIButton icon={<ArrowDown12Filled />} onClick={() => handelExport()}>
+            <Button
+              startIcon={<DownloadIcon />}
+              onClick={handleExport}
+              variant="outlined"
+            >
               Export Devices
-            </FluentUIButton>
+            </Button>
 
-            <PrimaryButton text="Add New Device" onClick={() => router.push('/main/devices/new')} />
+            <Button
+              variant="contained"
+              onClick={() => router.push('/main/devices/new')}
+            >
+              Add New Device
+            </Button>
           </Stack>
 
           <TextField
             placeholder="Search by serialNumber, model or badge number..."
             value={search}
-            onChange={(_, val) => setSearch(val || '')}
-            styles={{ root: { maxWidth: '400px' } }}
+            onChange={(e) => setSearch(e.target.value)}
+            fullWidth
+            sx={{ maxWidth: 400, mb: 2 }}
           />
 
           {isLoading ? (
-            <Stack horizontalAlign="center" verticalAlign="center" styles={{ root: { height: '300px' } }}>
-              <Spinner size={SpinnerSize.large} label="Loading devices..." />
-            </Stack>
+            <Box display="flex" justifyContent="center" alignItems="center" height={300}>
+              <CircularProgress size={60} />
+            </Box>
+          ) : devices.length === 0 && search === '' ? (
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              textAlign="center"
+              mt={6}
+            >
+              No devices found. Add a new device or import data.
+            </Typography>
+          ) : devices.length === 0 && search !== '' ? (
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              textAlign="center"
+              mt={6}
+            >
+              No devices found matching your search criteria.
+            </Typography>
           ) : (
-            <>
-              {devices.length === 0 && search === '' ? (
-                <Text variant="large" styles={{ root: { textAlign: 'center', marginTop: 50, color: '#666' } }}>
-                  No devices found. Add a new device or import data.
-                </Text>
-              ) : devices.length === 0 && search !== '' ? (
-                <Text variant="large" styles={{ root: { textAlign: 'center', marginTop: 50, color: '#666' } }}>
-                  No devices found matching your search criteria.
-                </Text>
-              ) : (
-                <DetailsList
-                  items={devices}
-                  columns={columns}
-                  layoutMode={DetailsListLayoutMode.justified}
-                  selectionMode={SelectionMode.none}
-                  styles={{ root: { marginTop: 10, overflowX: 'auto' } }}
-                />
-              )}
+            <TableContainer component={Paper}>
+              <Table size="small" sx={{ minWidth: 800 }}>
+                <TableHead>
+                  <TableRow>
+                    {[
+                      { id: 'serialNumber', label: 'Serial Number', width: 120 },
+                      { id: 'category', label: 'Category', width: 80 },
+                      { id: 'model', label: 'Model', width: 100 },
+                      { id: 'manufacture', label: 'Manufacture', width: 120 },
+                      { id: 'description', label: 'Description', width: 150 },
+                      { id: 'status', label: 'Status', width: 80 },
+                      { id: 'users', label: 'Current User', width: 250 }, // Renamed column header
+                    ].map(({ id, label, width }) => (
+                      <TableCell
+                        key={id}
+                        sx={{ minWidth: width, cursor: id !== 'users' ? 'pointer' : 'default' }}
+                        sortDirection={sortField === id ? (sortAsc ? 'asc' : 'desc') : false}
+                        onClick={id !== 'users' ? () => handleSort(id) : undefined}
+                      >
+                        {id !== 'users' ? (
+                          <TableSortLabel
+                            active={sortField === id}
+                            direction={sortAsc ? 'asc' : 'desc'}
+                          >
+                            {label}
+                          </TableSortLabel>
+                        ) : (
+                          label
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {devices.map((device) => {
+                    // Find the most recent (current) assignment
+                    // Sort by receivedDate to ensure the latest assignment without a handover date is picked
+                    const currentUserAssignment = device.users
+                      .sort((a, b) => new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime())
+                      .find(user => !user.handoverDate || user.handoverDate === 'NULL');
 
-              <Stack horizontal tokens={{ childrenGap: 8 }} verticalAlign="center" horizontalAlign="end" styles={{ root: { marginTop: 16 } }}>
-                <DefaultButton
-                  text="Prev"
-                  disabled={page === 0 || isLoading}
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
-                />
-                <Text variant="medium">Page {page + 1} / {totalPages}</Text>
-                <DefaultButton
-                  text="Next"
-                  disabled={page + 1 >= totalPages || isLoading}
-                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                />
-              </Stack>
-            </>
+                    // Check if there are any past users (those with a handover date)
+                    const hasPastUsers = device.users.some(user => user.handoverDate && user.handoverDate !== 'NULL');
+
+                    return (
+                      <TableRow key={device.serialNumber} hover>
+                        <TableCell>
+                          <Link href={`/main/devices/${device.serialNumber}`} passHref >
+                            <Typography
+                              component="a"
+                              sx={{ color: '#1976d2', cursor: 'pointer', textDecoration: 'none' }}
+                            >
+                              {device.serialNumber}
+                            </Typography>
+                          </Link>
+                        </TableCell>
+                        <TableCell>{device.category}</TableCell>
+                        <TableCell>{device.model}</TableCell>
+                        <TableCell>{device.manufacture}</TableCell>
+                        <TableCell>{device.description}</TableCell>
+                        <TableCell>{device.status}</TableCell>
+                        <TableCell>
+                          {currentUserAssignment ? (
+                            <Box display="flex" flexDirection="column" gap={0.5}>
+                              <Link href={`/main/users/${currentUserAssignment.badgeNumber}`} passHref >
+                                <Typography
+                                  component="a"
+                                  variant="body2"
+                                  sx={{ fontWeight: 'bold', textDecoration: 'none', color: '#1976d2', cursor: 'pointer' }}
+                                >
+                                  {currentUserAssignment.userName || 'Unknown User'} ({currentUserAssignment.badgeNumber})
+                                </Typography>
+                              </Link>
+                              <Typography variant="caption" color="text.secondary">
+                                Since: {formatDate(currentUserAssignment.receivedDate)}
+                              </Typography>
+                              <Stack direction="row" alignItems="center" spacing={1}>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={() =>
+                                    openDialog(device.serialNumber, currentUserAssignment.badgeNumber)
+                                  }
+                                >
+                                  Send Handover Request
+                                </Button>
+                                {currentUserAssignment.note && (
+                                  <Tooltip title={currentUserAssignment.note}>
+                                    <InfoOutlinedIcon color="action" sx={{ fontSize: 16, cursor: 'help' }} />
+                                  </Tooltip>
+                                )}
+                              </Stack>
+                            </Box>
+                          ) : (
+                            <Typography color="text.secondary" variant="body2">
+                              No Current Assignment
+                            </Typography>
+                          )}
+
+                          {hasPastUsers && (
+                            <Box mt={0.5}>
+                                <Link href={`/main/devices/${device.serialNumber}`} passHref >
+                                    <Typography
+                                        component="a"
+                                        variant="caption"
+                                        sx={{ textDecoration: 'none', color: 'text.secondary', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                                    >
+                                        View full history
+                                    </Typography>
+                                </Link>
+                            </Box>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
 
-          <Dialog
-            hidden={!dialogVisible}
-            onDismiss={() => setDialogVisible(false)}
-            dialogContentProps={{
-              type: DialogType.normal,
-              title: 'Send Handover Request',
-              subText: `To: ${selectedBadge} | Device: ${selectedDeviceSerial}`,
-            }}
+          <Stack
+            direction="row"
+            justifyContent="flex-end"
+            alignItems="center"
+            spacing={2}
+            sx={{ mt: 3 }}
           >
-            <DatePicker
-              label="Handover Date"
-              value={handoverDate}
-              onSelectDate={(date) => setHandoverDate(date ?? undefined)}
-              placeholder="Select a date"
-            />
-            <TextField
-              label="Note"
-              multiline
-              rows={3}
-              value={handoverNote}
-              onChange={(_, newVal) => setHandoverNote(newVal || '')}
-            />
-            <DialogFooter>
-              <PrimaryButton onClick={handleSendHandoverRequest} text="Send" />
-              <DefaultButton onClick={() => setDialogVisible(false)} text="Cancel" />
-            </DialogFooter>
+            <Button
+              variant="outlined"
+              startIcon={<ChevronLeftIcon />}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0 || isLoading}
+            >
+              Previous
+            </Button>
+
+            <Typography variant="body1">
+              Page <strong>{page + 1}</strong> of <strong>{totalPages}</strong>
+            </Typography>
+
+            <Button
+              variant="outlined"
+              endIcon={<ChevronRightIcon />}
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page + 1 >= totalPages || isLoading}
+            >
+              Next
+            </Button>
+          </Stack>
+          <Dialog open={dialogVisible} onClose={() => setDialogVisible(false)}>
+            <DialogTitle>
+              Send Handover Request
+              <Typography variant="subtitle2" mt={1}>
+                To: {selectedBadge} | Device: {selectedDeviceSerial}
+              </Typography>
+            </DialogTitle>
+            <DialogContent dividers>
+              <DatePicker
+                value={handoverDate}
+                onChange={(newDate: React.SetStateAction<Date | null>) => setHandoverDate(newDate)}
+                slotProps={{
+                  textField: { fullWidth: true, label: 'Handover Date', required: true },
+                }}
+              />
+              <TextField
+                label="Note"
+                multiline
+                rows={3}
+                value={handoverNote}
+                onChange={(e) => setHandoverNote(e.target.value)}
+                fullWidth
+                sx={{ mt: 2 }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleSendHandoverRequest} variant="contained">
+                Send
+              </Button>
+              <Button onClick={() => setDialogVisible(false)}>Cancel</Button>
+            </DialogActions>
           </Dialog>
         </>
       )}
-    </Stack>
+    </Box>
   );
 }

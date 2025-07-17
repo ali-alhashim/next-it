@@ -3,29 +3,21 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
-  Text,
-  Spinner,
-  MessageBar,
-  Dialog,
-  DialogTrigger,
-  DialogSurface,
-  DialogBody,
-  DialogTitle,
-  DialogActions,
-  
-  Button,
+  Box,
+  Typography,
   Card,
-  CardHeader,
-  CardFooter,
+  CardContent,
+  CardActions,
+  Button,
+  Dialog,
+  DialogTitle,
   DialogContent,
-} from '@fluentui/react-components';
-import {
-  DetailsList,
-  DetailsListLayoutMode,
-  IColumn,
-  MessageBarType,
+  DialogActions,
+  CircularProgress,
+  Alert,
   Stack,
-} from '@fluentui/react';
+} from '@mui/material';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
 interface DeviceUser {
   badgeNumber: string;
@@ -51,18 +43,17 @@ interface User {
   name: string;
 }
 
-const DeviceDetail = () => {
+export default function DeviceDetail() {
   const { serialNumber } = useParams();
   const [device, setDevice] = useState<Device | null>(null);
   const [loading, setLoading] = useState(true);
-
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [receivedDate, setReceivedDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [createdAtString, setCreatedAtString] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
 
-  // Fetch device
   useEffect(() => {
     const fetchDevice = async () => {
       try {
@@ -90,18 +81,17 @@ const DeviceDetail = () => {
     if (serialNumber) fetchDevice();
   }, [serialNumber]);
 
-  // Fetch users list
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch('/api/users',  { credentials: 'include' });
+        const res = await fetch('/api/users', { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
           setUsers(data.users);
         }
       } catch (err) {
         console.error('Failed to fetch users:', err);
-         setUsers([]);
+        setUsers([]);
       }
     };
 
@@ -137,93 +127,86 @@ const DeviceDetail = () => {
     }
   };
 
-  const userColumns: IColumn[] = [
-    { key: 'badgeNumber', name: 'Badge Number', fieldName: 'badgeNumber', minWidth: 100 },
-    { key: 'receivedDate', name: 'Received Date', fieldName: 'receivedDate', minWidth: 130 },
-    { key: 'handoverDate', name: 'Handover Date', fieldName: 'handoverDate', minWidth: 130 },
-    { key: 'note', name: 'Note', fieldName: 'note', minWidth: 200 },
-    {
-      key: 'createdAt',
-      name: 'Created At',
-      fieldName: 'createdAt',
-      minWidth: 150,
-      onRender: (item: DeviceUser) =>
-       item.createdAt?.$date,
-    },
+  const userColumns: GridColDef[] = [
+    { field: 'badgeNumber', headerName: 'Badge Number', width: 130 },
+    { field: 'receivedDate', headerName: 'Received Date', width: 150 },
+    { field: 'handoverDate', headerName: 'Handover Date', width: 150 },
+    { field: 'note', headerName: 'Note', width: 200 },
+    
   ];
 
-  if (loading) return <Spinner label="Loading device data..." />;
-
-  if (!device) {
+  if (loading)
     return (
-      <MessageBar messageBarType={MessageBarType.error}>
-        Device not found
-      </MessageBar>
+      <Box display="flex" justifyContent="center" mt={4}>
+        <CircularProgress />
+      </Box>
     );
-  }
+
+  if (!device)
+    return (
+      <Alert severity="error" sx={{ mt: 4 }}>
+        Device not found
+      </Alert>
+    );
 
   return (
-    <Stack tokens={{ childrenGap: 20 }} styles={{ root: { padding: 24 } }}>
-      <Card>
-        <CardHeader>
-          <Text variant="xLargePlus">Device Details</Text>
-        </CardHeader>
-        <Stack tokens={{ childrenGap: 8 }} styles={{ root: { padding: 16 } }}>
-          <Text><strong>Serial Number:</strong> {device.serialNumber}</Text>
-          <Text><strong>Category:</strong> {device.category}</Text>
-          <Text><strong>Model:</strong> {device.model}</Text>
-          <Text><strong>Description:</strong> {device.description}</Text>
-          <Text><strong>Manufacture:</strong> {device.manufacture}</Text>
-          <Text><strong>Status:</strong> {device.status}</Text>
-          <Text><strong>Created At:</strong> {createdAtString}</Text>
-        </Stack>
-        <CardFooter>
-          <Text variant="mediumPlus">Total Users: {device.users.length}</Text>
-        </CardFooter>
+    <Box sx={{ padding: 4 }}>
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Device Details
+          </Typography>
+          <Stack spacing={1}>
+            <Typography><strong>Serial Number:</strong> {device.serialNumber}</Typography>
+            <Typography><strong>Category:</strong> {device.category}</Typography>
+            <Typography><strong>Model:</strong> {device.model}</Typography>
+            <Typography><strong>Description:</strong> {device.description}</Typography>
+            <Typography><strong>Manufacture:</strong> {device.manufacture}</Typography>
+            <Typography><strong>Status:</strong> {device.status}</Typography>
+            <Typography><strong>Created At:</strong> {createdAtString}</Typography>
+          </Stack>
+        </CardContent>
+        <CardActions>
+          <Typography variant="body1" sx={{ ml: 2 }}>
+            Total Users: {device.users.length}
+          </Typography>
+        </CardActions>
       </Card>
 
-    
-   
-      <Dialog>
-      <DialogTrigger disableButtonEnhancement>
-        <Button>Open dialog</Button>
-      </DialogTrigger>
-      <DialogSurface>
-        <DialogBody>
+      <Box>
+        <Button variant="outlined" onClick={() => setOpenDialog(true)}>
+          Open Dialog
+        </Button>
+
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
           <DialogTitle>Dialog title</DialogTitle>
           <DialogContent>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-            exercitationem cumque repellendus eaque est dolor eius expedita
-            nulla ullam? Tenetur reprehenderit aut voluptatum impedit voluptates
-            in natus iure cumque eaque?
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
           </DialogContent>
           <DialogActions>
-            <Button appearance="primary">Do Something</Button>
-            <DialogTrigger disableButtonEnhancement>
-              <Button appearance="secondary">Close</Button>
-            </DialogTrigger>
+            <Button onClick={() => alert('Do Something')} variant="contained">
+              Do Something
+            </Button>
+            <Button onClick={() => setOpenDialog(false)}>Close</Button>
           </DialogActions>
-        </DialogBody>
-      </DialogSurface>
-    </Dialog>
+        </Dialog>
+      </Box>
 
-
-      <Card>
-        <CardHeader>
-          <Text variant="xLarge">Users History</Text>
-        </CardHeader>
-        <div style={{ padding: 16 }}>
-          <DetailsList
-            items={device.users}
-            columns={userColumns}
-            layoutMode={DetailsListLayoutMode.justified}
-            selectionPreservedOnEmptyClick
-            styles={{ root: { overflowX: 'auto' } }}
-          />
-        </div>
+      <Card sx={{ mt: 4 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Users History
+          </Typography>
+          <Box sx={{ height: 400 }}>
+            <DataGrid
+              rows={device.users.map((u, index) => ({ id: index, ...u }))}
+              columns={userColumns}
+              pageSize={5}
+              rowsPerPageOptions={[5]}
+            />
+          </Box>
+        </CardContent>
       </Card>
-    </Stack>
+    </Box>
   );
-};
-
-export default DeviceDetail;
+}

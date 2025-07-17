@@ -1,34 +1,33 @@
 'use client';
-
-import { Stack } from '@fluentui/react/lib/Stack';
-import { Text } from '@fluentui/react/lib/Text';
-import { Separator } from '@fluentui/react/lib/Separator';
-import { DetailsList, IColumn } from '@fluentui/react/lib/DetailsList';
+import {
+  Box,
+  Typography,
+  Avatar,
+  Grid, // Make sure Grid is imported
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Card
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 
-const Card = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div
-    style={{
-      backgroundColor: '#fff',
-      padding: 20,
-      borderRadius: 8,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      minWidth: 300,
-      flex: 1,
-    }}
-  >
-    <Text variant="xLarge">{title}</Text>
-    <Separator styles={{ root: { margin: '10px 0' } }} />
-    <div>{children}</div>
-  </div>
-);
+// ... (Card component remains the same)
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<{ name: string; email: string; badgeNumber: string, photo:string, role:string } | null>(null);
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    badgeNumber: string;
+    photo: string;
+    role: string;
+  } | null>(null);
 
   useEffect(() => {
     async function fetchUser() {
-      const res = await fetch('/api/users/me',  { credentials: 'include' });
+      const res = await fetch('/api/users/me', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setUser(data);
@@ -40,86 +39,104 @@ export default function DashboardPage() {
   }, []);
 
   const assets = [
-    { type: 'Laptop', model: 'Dell Latitude', receivedDate:'May-03-2025' , handoverDate:'' },
-    { type: 'Monitor', model: 'HP 24"' , receivedDate:'July-06-2025', handoverDate:''},
-    { type: 'Phone', model: 'iPhone 12' , receivedDate:'June-24-2024', handoverDate:'July-06-2025'},
+    { type: 'Laptop', model: 'Dell Latitude', receivedDate: 'May-03-2025', handoverDate: '' },
+    { type: 'Monitor', model: 'HP 24"', receivedDate: 'July-06-2025', handoverDate: '' },
+    { type: 'Phone', model: 'iPhone 12', receivedDate: 'June-24-2024', handoverDate: 'July-06-2025' },
   ];
 
   const tickets = [
-    { id: '1234', subject: 'Laptop not working', status:'OPEN' },
-    { id: '1235', subject: 'Request new email', status:'CLOSED' },
+    { id: '1234', subject: 'Laptop not working', status: 'OPEN' },
+    { id: '1235', subject: 'Request new email', status: 'CLOSED' },
   ];
-
-
-
-  const assetColumns: IColumn[] = [
-    { key: '1', name: 'Type', fieldName: 'type', minWidth: 100 },
-    { key: '2', name: 'Model', fieldName: 'model', minWidth: 200 },
-    { key: '3', name: 'Received Date', fieldName: 'receivedDate', minWidth: 200 },
-    { key: '4', name: 'Handover Date', fieldName: 'handoverDate', minWidth: 200 },
-  ];
-
-  const ticketColumns: IColumn[] = [
-    { key: '1', name: 'Ticket ID', fieldName: 'id', minWidth: 100 },
-    { key: '2', name: 'Subject', fieldName: 'subject', minWidth: 200 },
-    { key: '3', name: 'Status', fieldName: 'status', minWidth: 200 },
-  ];
-
-
 
   return (
-    <Stack
-      tokens={{ childrenGap: 20 }}
-      styles={{ root: { padding: 32, minHeight: '100vh' } }}
-    >
-      <Text variant="xxLarge" styles={{ root: { marginBottom: 16 } }}>
+    <Box sx={{ p: 4, minHeight: '100vh' }}>
+      <Typography variant="h4" sx={{ mb: 3 }}>
         Welcome to Next-IT Dashboard
-      </Text>
+      </Typography>
 
-      <Stack tokens={{ childrenGap: 20 }} wrap>
+     
+      <Grid container spacing={3}>
        
+        <Grid item xs={12} md={6}>
+          <Card title="User Information">
+            <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+              <Avatar
+                src={`/api/${user?.photo || 'uploads/default.png'}`}
+                sx={{ width: 100, height: 100 }}
+              />
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  {user?.name ?? 'Loading...'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Badge: {user?.badgeNumber ?? 'Loading...'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Email: {user?.email ?? 'Loading...'}
+                </Typography>
+                {user?.role && (
+                  <Typography variant="body2" color="text.secondary">
+                    Role: {user.role}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+          </Card>
+        </Grid>
 
-       <Card title="User Information">
-  <Stack horizontal tokens={{ childrenGap: 20 }} verticalAlign="center">
-    <img
-      src={`/api/${user?.photo || 'uploads/default.png'}`}
-      width={100}
-      height={100}
-      style={{ borderRadius: '50%', objectFit: 'cover' }}
-      alt="User Photo"
-    />
+        <Grid item xs={12} md={6}>
+          <Card title="My IT Assets">
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Model</TableCell>
+                    <TableCell>Received Date</TableCell>
+                    <TableCell>Handover Date</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {assets.map((asset, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>{asset.type}</TableCell>
+                      <TableCell>{asset.model}</TableCell>
+                      <TableCell>{asset.receivedDate}</TableCell>
+                      <TableCell>{asset.handoverDate || '-'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Card>
+        </Grid>
 
-    <Stack tokens={{ childrenGap: 4 }}>
-      <Text variant="large" styles={{ root: { fontWeight: 600 } }}>
-        {user?.name ?? 'Loading...'}
-      </Text>
-
-      <Text variant="smallPlus" styles={{ root: { color: '#666' } }}>
-        Badge: {user?.badgeNumber ?? 'Loading...'}
-      </Text>
-
-      <Text variant="smallPlus" styles={{ root: { color: '#666' } }}>
-        Email: {user?.email ?? 'Loading...'}
-      </Text>
-
-      {user?.role && (
-        <Text variant="smallPlus" styles={{ root: { color: '#666' } }}>
-          Role: {user.role}
-        </Text>
-      )}
-    </Stack>
-  </Stack>
-</Card>
-
-
-        <Card title="My IT Assets">
-          <DetailsList items={assets} columns={assetColumns} />
-        </Card>
-
-        <Card title="My Tickets">
-          <DetailsList items={tickets} columns={ticketColumns} />
-        </Card>
-      </Stack>
-    </Stack>
+        <Grid item xs={12}>
+          <Card title="My Tickets">
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Ticket ID</TableCell>
+                    <TableCell>Subject</TableCell>
+                    <TableCell>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tickets.map((ticket, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>{ticket.id}</TableCell>
+                      <TableCell>{ticket.subject}</TableCell>
+                      <TableCell>{ticket.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }

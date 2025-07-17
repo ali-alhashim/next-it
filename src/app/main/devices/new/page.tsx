@@ -1,35 +1,32 @@
 'use client';
-//src/app/main/devices/new/page.tsx
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  Box,
+  Button,
+  MenuItem,
   Stack,
   TextField,
-  Dropdown,
-  IDropdownOption,
-  PrimaryButton,
-  Label,
-} from '@fluentui/react';
+  Typography,
+} from '@mui/material';
 
-
-const categoryOptions: IDropdownOption[] = [
-  { key: 'Laptop', text: 'Laptop' },
-  { key: 'Desktop PC', text: 'Desktop PC' },
-  { key: 'Monitor', text: 'Monitor' },
-  { key: 'Printer', text: 'Printer' },
-  { key: 'Other', text: 'Other' },
-  
-  
+const categoryOptions = [
+  'Laptop',
+  'Desktop PC',
+  'Monitor',
+  'Printer',
+  'Other',
 ];
 
-const statusOptions:IDropdownOption[] = [
-  {key:'New', text:'New'},
-  {key:'Used', text:'Used'},
-  {key:'Old', text:'Old'},
-  {key:'Damaged', text:'Damaged'},
-  { key: 'Lost', text: 'Lost' },
-  { key: 'Stolen', text: 'Stolen' },
-]
+const statusOptions = [
+  'New',
+  'Used',
+  'Old',
+  'Damaged',
+  'Lost',
+  'Stolen',
+];
 
 export default function AddDevicePage() {
   const router = useRouter();
@@ -37,37 +34,27 @@ export default function AddDevicePage() {
     serialNumber: '',
     category: '',
     model: '',
-    description:'',
-    manufacture:'',
-    invoiceNumber:'',
-    supplier:'',
-    status:'',
+    description: '',
+    manufacture: '',
+    invoiceNumber: '',
+    supplier: '',
+    status: '',
   });
 
   const handleInputChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
- 
-
   const handleSubmit = async () => {
     const formData = new FormData();
-    formData.append('serialNumber', form.serialNumber);
-    formData.append('category', form.category);
-    formData.append('model', form.model);
-    formData.append('description', form.description);
-    formData.append('manufacture', form.manufacture);
-    formData.append('invoiceNumber', form.invoiceNumber);
-    formData.append('supplier', form.supplier);
-    formData.append('status', form.status);
-   
-    
-   
+    Object.entries(form).forEach(([key, value]) =>
+      formData.append(key, value)
+    );
 
     const res = await fetch('/api/devices/new', {
       method: 'POST',
       body: formData,
-      credentials: 'include'
+      credentials: 'include',
     });
 
     if (res.ok) {
@@ -78,83 +65,94 @@ export default function AddDevicePage() {
   };
 
   return (
-    <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 32, maxWidth: 600 } }}>
-      <h2>Add New Device</h2>
+    <Box sx={{ p: 4, maxWidth: 600 }}>
+      <Typography variant="h5" gutterBottom>
+        Add New Device
+      </Typography>
 
-      <TextField
-        label="Serial Number"
-        value={form.serialNumber}
-        onChange={(_, v) => handleInputChange('serialNumber', v || '')}
-        required
-      />
-
-        <Dropdown
-        label="Category"
-        selectedKey={form.category}
-        onChange={(_, option) => handleInputChange('category', option?.key as string)}
-        options={categoryOptions}
-        required
-      />
-
-      <TextField
-        label="Model"
-        value={form.model}
-        onChange={(_, v) => handleInputChange('model', v || '')}
-        required
-      />
+      <Stack spacing={2}>
+        <TextField
+          label="Serial Number"
+          value={form.serialNumber}
+          onChange={(e) => handleInputChange('serialNumber', e.target.value)}
+          required
+          fullWidth
+        />
 
         <TextField
-        label="Description"
-        value={form.description}
-        onChange={(_, v) => handleInputChange('description', v || '')}
-        required
-      />
-      
-       <TextField
-        label="Manufacture"
-        value={form.manufacture}
-        onChange={(_, v) => handleInputChange('manufacture', v || '')}
-        required
-      />
+          label="Category"
+          select
+          value={form.category}
+          onChange={(e) => handleInputChange('category', e.target.value)}
+          required
+          fullWidth
+        >
+          {categoryOptions.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
 
-       <TextField
-        label="Invoice Number"
-        value={form.invoiceNumber}
-        onChange={(_, v) => handleInputChange('invoiceNumber', v || '')}
-        required
-      />
+        <TextField
+          label="Model"
+          value={form.model}
+          onChange={(e) => handleInputChange('model', e.target.value)}
+          required
+          fullWidth
+        />
 
-      <TextField
-        label="Supplier"
-        value={form.supplier}
-        onChange={(_, v) => handleInputChange('supplier', v || '')}
-        required
-      />
+        <TextField
+          label="Description"
+          value={form.description}
+          onChange={(e) => handleInputChange('description', e.target.value)}
+          required
+          fullWidth
+        />
 
-       <Dropdown
-        label="Status"
-        selectedKey={form.status}
-        onChange={(_, option) => handleInputChange('status', option?.key as string)}
-        options={statusOptions}
-        required
-      />
-      
+        <TextField
+          label="Manufacture"
+          value={form.manufacture}
+          onChange={(e) => handleInputChange('manufacture', e.target.value)}
+          required
+          fullWidth
+        />
 
-      
+        <TextField
+          label="Invoice Number"
+          value={form.invoiceNumber}
+          onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
+          required
+          fullWidth
+        />
 
-      
+        <TextField
+          label="Supplier"
+          value={form.supplier}
+          onChange={(e) => handleInputChange('supplier', e.target.value)}
+          required
+          fullWidth
+        />
 
-      
+        <TextField
+          label="Status"
+          select
+          value={form.status}
+          onChange={(e) => handleInputChange('status', e.target.value)}
+          required
+          fullWidth
+        >
+          {statusOptions.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
 
-      
-
-    
-
-    
-
-     
-
-      <PrimaryButton text="Add Device" onClick={handleSubmit} />
-    </Stack>
+        <Button variant="contained" color="primary" onClick={handleSubmit}>
+          Add Device
+        </Button>
+      </Stack>
+    </Box>
   );
 }
